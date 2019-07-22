@@ -1,0 +1,114 @@
+<template name="div">
+  <div>
+    {{> Template.contentBlock}}
+  </div>
+</template>
+
+<template name="ApplicationLayout">
+  <span class="connectionBanner">{{> connectionBanner }}</span>
+
+  <!--Sidebar Menu-->
+  <div class="ui vertical inverted sidebar menu">
+    {{> AppNavigation}}
+    {{#unless currentUserid}}
+      <a class="item" href="{{ pathFor 'Wallet' }}">{{_ "Sign in/ Sign up" }}</a>
+      {{else}}
+      <span title="{{currentAddress}}" class="identicon" style="background-image: url('{{identiconData}}')"></span>
+      <a class="item" href="{{ pathFor 'Logout' }}">{{_ "Logout" }}</a>
+    {{/unless}}
+  </div>
+
+  <!--Page Contents-->
+  <div class="pusher" id="top" >
+    <div class="ui large secondary pointing menu main">
+      <a class="toc item"><i class="sidebar icon"></i></a>
+      {{> AppNavigation}}
+      {{> Indicators}}
+      <div class="right item">
+        <a class="ui dropdown mini icon button language">
+          <i class="world icon"></i>
+          <span class="text">&nbsp;<i class="gb flag"></i></span>
+          <div class="menu">
+            <div class="item" data-type="lang" data-value="en">
+              &nbsp;<i class="gb flag"></i>
+            </div>
+            <div class="item" data-type="lang" data-value="cn">
+              &nbsp;<i class="cn flag"></i>
+            </div>
+            <div class="item" data-type="lang" data-value="ru">
+              &nbsp;<i class="ru flag"></i>
+            </div>
+            <div class="item" data-type="lang" data-value="es">
+              &nbsp;<i class="es flag"></i>
+            </div>
+            <div class="item" data-type="lang" data-value="de">
+              &nbsp;<i class="de flag"></i>
+            </div>
+            <div class="item" data-type="lang" data-value="jp">
+              &nbsp;<i class="jp flag"></i>
+            </div>
+            <div class="item" data-type="lang" data-value="kr">
+              &nbsp;<i class="kr flag"></i>
+            </div>
+          </div>
+        </a>
+        {{#unless currentUserid}}
+          <a class="ui mini button purple" href="{{ pathFor 'Wallet' }}">{{_ "Sign in / Sign up" }}</a>
+          {{else}}
+          <span class="identicon" title="{{currentAddress}}" style="background-image: url('{{identiconData}}')"></span>
+          <a class="ui mini button purple" id="logout">{{_ "Logout" }}</a>
+        {{/unless}}
+      </div>
+    </div>
+    <div class="ui {{currentPath}} basic segment main-wrapper">
+      {{> yield}}
+    </div>
+  </div>
+
+  <div class="ui inverted vertical footer segment">
+    <div class="ui container">
+      <div class="ui stackable inverted divided equal height stackable grid">
+        <div class="three wide column">
+          <h4 class="ui inverted header">
+            {{_ "Subscription & channels" }}
+          </h4>
+          <div class="ui inverted link list">
+            <a class="color-purple-channel" href="https://www.reddit.com/user/escrowblock/"><i class="reddit large icon"></i></a>
+            <a class="color-purple-channel" href="https://medium.com/@escrowblock"><i class="medium large icon"></i></a>
+            <a class="color-purple-channel" href="https://t.me/escbnet"><i class="telegram large icon"></i></a>
+            <a class="color-purple-channel" href="https://twitter.com/escrowblock"><i class="twitter large icon"></i></a>
+            <a class="color-purple-channel" href="https://fb.me/escrowblock"><i class="facebook large icon"></i></a>
+            <a class="color-purple-channel" href="https://github.com/escrowblock"><i class="github large icon"></i></a>
+            <a class="color-purple-channel" href="https://vk.com/escrowblock"><i class="vk large icon"></i></a>
+            <a class="color-purple-channel" href="https://bitcointalk.org/index.php?topic=3240234"><i class="btc large icon"></i></a>
+          </div>
+          <span class="">{{{ currentAddress }}}</span>
+          <span class="">{{_ "Version" }}: {{ version }}</span>
+        </div>
+        <div class="thirteen wide column">
+          <h4 class="ui inverted header">
+            &nbsp;
+          </h4>
+          <div class="ui inverted horizontal link list">
+            <a class="item" title="{{_ "Whitepaper" }}" href="https://escrowblock.net/whitepaper.html">{{_ "Whitepaper" }}</a>
+            <a class="item" title="{{_ "Terms and conditions" }}" href="https://escrowblock.net/terms_and_conditions.html">{{_ "Terms and conditions" }}</a>
+            <a class="item" title="{{_ "Privacy policy" }}" href="https://escrowblock.net/privacy_policy.html">{{_ "Privacy policy" }}</a>
+            <a class="item" title="{{_ "Support" }}" href="{{ pathFor 'Support' }}">{{_ "Support" }}</a>
+          </div>
+          <span class="">&copy; EscrowBlock Foundation. All Rights Reserved.</span>
+          <br/><br/>
+          <span class="">ESCB exchange is a software platform ONLY and does not conduct any independent diligence on or substantive review of any blockchain asset, digital currency, cryptocurrency or associated funds. You are fully and solely responsible for evaluating your investments, for determining whether you will exchange blockchain assets based on your own, and for all your decisions as to whether to exchange blockchain assets with platform. In many cases, blockchain assets you exchange on the basis of your research may not increase in value, and may decrease in value. Similarly, blockchain assets you exchange on the basis of your research may increase in value after your exchange. Past performance is not indicative of future results. Any investment in blockchain assets involves the risk of loss of part or all of your investment. The value of the blockchain assets you exchange is subject to market and other investment risks.</span>
+        </div>
+      </div>
+    </div>
+    <div id="alert_placeholder"></div>
+
+    {{> modalAlert}}
+    {{> modalConfirmation}}
+    {{> modalOTP}}
+
+    {{#if alert_bottom}}
+      <div id="alert_bottom_placeholder" class="ui sticky alert-bottom">{{alert_bottom_text}}</div>
+    {{/if}}
+  </div>
+</template>

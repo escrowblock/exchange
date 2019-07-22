@@ -1,0 +1,36 @@
+<template name="Support">
+  <div class="ui stackable centered grid">
+    <div class="column">
+      <div class="row">
+        <h2 class="ui header">
+          {{_ "Create a support ticket" }}
+        </h2>
+      </div>
+    </div>
+  </div>
+  {{#autoForm schema=contactFormSchema id="support" type="normal" validation="keyup" template="semanticUI"}}
+  
+    <div class="ui form" id="supportForm">
+      <div class="ui stackable two column grid segment">
+        <div class="column">
+          {{> afQuickField_i18n name="Name" leftIcon="user" label=false placeholder="Ms. Peter"}}
+        </div>
+        <div class="column">
+          {{> afQuickField_i18n name="Email" leftIcon="mail" label=false placeholder="jhon@domain.net"}}
+        </div>
+        <div class="column">
+          {{> afQuickField_i18n name="Category" leftIcon="book" label=false}}
+        </div>
+        <div class="column">
+          {{> afQuickField_i18n name="Message" label=false placeholder="Type your message here"}}
+        </div>
+      </div>
+    </div>
+    <div class="ui stackable grid">
+      <div class="nine wide right aligned column segment">
+        <button type="submit" class="ui button green" id="sendMessage">{{_ "Send message" }}</button>
+      </div>
+    </div>
+  {{/autoForm}}
+
+</template>

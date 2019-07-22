@@ -1,0 +1,83 @@
+@media screen and (max-width: 767px) {
+  #alert_placeholder {
+    width: 100%;
+    left: 0;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+    bottom: 0px;
+  }
+
+  .main-center.container {
+    width: auto !important;
+    margin-left: 1em !important;
+    margin-right: 1em !important;
+  }
+
+  .secondary.pointing.menu .item, .secondary.pointing.menu .menu {
+    display: none;
+  }
+
+  .infoblock.account {
+    display: none;
+  }
+
+  .secondary.pointing.menu .toc.item {
+    display: block;
+  }
+  
+  .ui.stackable.menu.chartsTab .item,
+  .ui.stackable.menu.historyTab .item,
+  .ui.stackable.menu.orderTypeTab .item {
+    width: calc(100% - 6px) !important;
+  }
+
+}
+
+@media only screen and (min-width: 1145px) {
+  .ui.top.menu {
+    display: none;
+  }
+  .ui.top.menu.language {
+    display: block;
+  }
+}
+
+@media only screen and (max-width: 1144px) {
+
+  .ui.bottom.pushable {
+    height: calc(100% - 3rem);
+    overflow-x: initial;
+  }
+
+  .ui.vertical.menu .item >.label {
+    margin-left: auto;
+    float: none;
+    margin-right: auto;
+  }
+
+  .ui.top.attached.menu {
+    .ui.header {
+      font-size: 0.7em;
+      padding-bottom: 0px;
+      padding-top: 0.7em;
+    }
+  }
+
+  .ui.vertical.icon.menu .item>.icon:not(.dropdown) {
+    float: left;
+    padding-right: 2em;
+    padding-top: 0.25em;
+    font-size: 0.9em !important;
+  }
+
+  .ui.vertical.icon.menu .item {
+    text-align: left;
+  }
+}
+
+@media print {
+  #alert_placeholder {
+    display: none !important;
+  }
+}

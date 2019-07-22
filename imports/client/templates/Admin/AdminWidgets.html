@@ -1,0 +1,26 @@
+<template name="adminDefaultWidgets">
+	<div class="ui grid">
+		{{#each admin_collections}}
+			{{#unless $eq showWidget false}}
+				{{> adminCollectionWidget collection=name}}
+			{{/unless}}
+		{{/each}}
+	</div>
+</template>
+
+<template name="adminCollectionWidget">
+	{{#with adminGetCollection collection}}
+		<div class="four wide column">
+			<a href="{{pathFor 'adminDashboard'}}/{{this.name}}">
+				<div class="ui card">
+					<div class="image">
+						<i class="ui icon {{this.icon}}" alt="{{this.label}}"></i>
+					</div>
+					<div class="extra content">
+						{{adminCollectionCount name}} {{this.label}}
+					</div>
+				</div>
+			</a>
+		</div>
+	{{/with}}
+</template>

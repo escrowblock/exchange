@@ -1,0 +1,227 @@
+<template name="Wallet">
+  <div class="ui raised very padded container">
+    <div class="ui stackable centered grid">
+      <div class="column">
+        <div class="row">
+          <h2 class="ui header">
+            {{_ "Which wallet way do you want to use?" }}
+          </h2>
+        </div>
+      </div>
+    </div>
+    <div class="ui stackable centered grid form wallet-way-wrapper">
+
+      <div class="three wide center aligned column">
+        <div class="wallet-way-wrapper" id="metamaskWalet">
+          <div class="ui icon"><img src="/img/metamask.png"></div>
+          <div>{{_ "Use Metamask" }}</div>
+        </div>
+      </div>
+<!-- 
+      <div class="three wide center aligned column">
+        <div class="wallet-way-wrapper" id="ledgerWalet">
+          <div class="ui icon"><img src="/img/ledger.png"></div>
+          <div>{{_ "Use Ledger Wallet" }}</div>
+        </div>
+      </div>
+
+      <div class="three wide center aligned column">
+        <div class="wallet-way-wrapper" id="trezorWalet">
+          <div class="ui icon"><img src="/img/trezor.png"></div>
+          <div>{{_ "Use Trezor Wallet" }}</div>
+        </div>
+      </div>
+-->
+      <div class="three wide center aligned column">
+        <div class="wallet-way-wrapper" id="createWalet">
+          <div class="ui icon"><img src="/img/create_wallet.png"></div>
+          <div>{{_ "Create Wallet" }}</div>
+        </div>
+      </div>
+
+      <div class="three wide center aligned column">
+        <div class="wallet-way-wrapper" id="unlockWalet">
+          <div class="ui icon"><img src="/img/unlock.png"></div>
+          <div>{{_ "Unlock wallet" }}</div>
+        </div>
+      </div>
+
+    </div>
+    
+    <div class="ui stackable centered grid">
+      <div class="sixteen wide center aligned column">
+        <div class="ui ignored orange message">
+          <i class="icon info"></i>
+          {{{_ "Please be careful! Check each time the address in browser before login. It must be <b>%s</b>" url}}}
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</template>
+
+<template name="CreateWallet">
+  <div class="ui raised very padded container">
+    <div class="ui stackable centered grid">
+      <div class="column">
+        <div class="row">
+          <h2 class="ui header">
+            {{_ "Please secure your wallet" }}
+          </h2>
+        </div>
+      </div>
+    </div>
+
+    <div id="createwallet" class="ui form">
+      {{#if createWallet }}
+      <div class="ui stackable grid segment">
+        <div class="row">
+          <div class="three wide center aligned column">
+            <div class="ui basic segment">
+              <div class="ui segment">
+                <i class="file text outline huge icon"></i>
+              </div>
+            </div>
+          </div>
+          <div class="thirteen wide column">
+            <div class="ui basic segment">
+              <div class="small-down-padding">
+                <h3 class="header">{{_ "Create your password for your new custom wallet" }}</h3>
+              </div>
+              <div class="small-down-padding">
+                <div class="ui action fluid input">
+                  <input type="text" id="strongPassword" placeholder="{{_ 'Password' }}">
+                  <button class="ui button" id="generateRandomPassword">
+                    <i class="refresh icon"></i>
+                    {{_ "Generate random password" }}
+                  </button>
+                </div>
+              </div>
+              <div class="ui segment inverted yellow">
+                <i class="info icon"></i>{{_ "PASS_9NUMBER" }}
+              </div>
+              <div class="field">
+                <div class="ui ignored red message">
+                  <i class="icon info"></i>
+                  {{_ "IMPORTANT_PASSPHRASE" }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {{else}}
+        <div class="ui stackable grid segment">
+          <div class="row">
+            <div class="three wide center aligned column">
+              <div class="ui basic segment">
+                <div class="ui segment">
+                  <i class="file text outline huge icon"></i>
+                </div>
+              </div>
+            </div>
+            <div class="thirteen wide column">
+              <div class="ui basic segment">
+                <div class="small-down-padding">
+                  <h3 class="header">{{_ "Download or print your keystore file (UTC/JSON)" }}</h3>
+                </div>
+                <div class="ui stackable grid">
+                  {{#div class="eight wide tablet four wide computer column"}}
+                    <button class="ui blue button" id="downloadUTCJSON">
+                      <i class="download icon"></i>
+                      {{_ "Download file" }}
+                    </button>
+                  {{/div}}
+                  {{#if print}}
+                    {{#div class="eight wide tablet eight wide computer column"}}
+                      <button class="ui blue button" id="printUTCJSON">
+                        <i class="print icon"></i>
+                        {{_ "Print paper wallet" }}
+                      </button>
+                    {{/div}}
+                  {{/if}}
+                </div>
+                <div class="small-down-padding">
+                  <div class="ui form">
+                    <div class="field">
+                      <label>{{_ "Your personal Ethereum wallet address" }}:</label>
+                      <div class="ui action input">
+                        <input type="text" id="walletAddress"/>
+                        <button id="copyAddress" class="ui blue button">
+                          <i class="copy icon"></i>
+                          {{_ "Copy" }}
+                        </button>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <div class="ui ignored red message">
+                        <i class="icon info"></i>
+                        {{_ "IMPORTANT_UTC_JSON" }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      {{/if}}
+      
+      {{#if createWallet }}
+        <div class="ui stackable grid">
+          <div class="eight wide right aligned column segment">
+            <button class="ui button purple" id="createNewWallet" type="submit"> {{_ "Generate" }}</button>
+          </div>
+        </div>
+      {{else}}
+        <div class="eight wide right aligned column segment">
+          <button class="ui button green" id="signUp" type="submit"> {{_ "Sign up" }}</button>
+        </div>
+      {{/if}}
+    </div>
+
+  </div>
+</template>
+
+<template name="UnlockWallet">
+
+  <div class="ui stackable grid segment">
+    <div class="row">
+      <div class="three wide center aligned column">
+        <div class="ui basic segment">
+          <div class="ui segment">
+            <i class="file text outline huge icon"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="thirteen wide column">
+        <div class="ui basic segment">
+          <div class="ui form column" id="unlockForm">
+            <div class="small-down-padding">
+              <h3 class="header">{{_ "Paste your keystore file (UTC/JSON) here and unlock via password" }}</h3>
+            </div>
+            <div class="small-down-padding">
+              <div class="ui form">
+                <div class="field">
+                  <textarea rows="3" placeholder="{{_ "Paste UTC/JSON (v3) wallet" }}" id="unlockWalletJson"></textarea>
+                </div>
+                <div class="ui action fluid input">
+                  <input type="password" id="unlockWalletPassword" placeholder="{{_ "Password" }}">
+                  <button id="toogleUnlockWalletPassword" class="ui button">{{_ "Show" }}</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="ui stackable grid">
+    <div class="eight wide right aligned column segment">
+      <button class="ui button purple" id="unlockWallet" type="submit"> {{_ "Unlock" }}</button>
+    </div>
+  </div>
+</template>

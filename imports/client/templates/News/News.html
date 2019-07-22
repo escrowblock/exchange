@@ -1,0 +1,26 @@
+<template name="News">
+	{{#if notEmpty}}
+		<div class="ui celled list">
+			{{#each news}}
+				{{> NewsItem }}
+			{{/each}}
+		</div>
+	{{else}}
+		<span>{{_ "Empty list" }}</span>
+	{{/if}}
+</template>
+
+<template name="NewsItem">
+	<div class="item">
+		<div class="content">
+			<div class="header">
+       	<div class="header">
+					{{#if created}}
+					<time datetime="{{created}}" class="notification__time">{{date}}</time>
+					{{/if}}
+				</div>
+			</div>
+			{{{formatBody}}}
+		</div>
+	</div>
+</template>

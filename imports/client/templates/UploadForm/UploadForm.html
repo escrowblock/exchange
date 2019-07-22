@@ -1,0 +1,29 @@
+<template name="UploadForm">
+  <form id="uploadFile" class="ui form">
+    {{#if status}}
+      <div id="progress">
+        <span class="progress">
+          <span style="width: {{status.progress}}%">{{status.progress}}%</span>
+        </span>
+        {{#if onPause}}
+          <span class="duration"> ~ {{_ "Current loading in the pause mode"}}</span>
+        {{else}}
+          <span class="duration"> ~ {{status.estimateDuration}}</span>
+        {{/if}}
+      </div>
+    {{else}}
+      <input name="fileInput" class="offscreen needsclick" id="fileInput" type="file" />
+    {{/if}}
+    {{#if error}}
+      <span class="error">{{ error }}</span>
+    {{/if}}
+    <div id="ui_file_list">
+      {{#each uploaded_files}}
+        <div class="remove-file" data-id={{_id}}>
+          <div class="remove-file-name">{{name}}</div>
+          <div class="remove-file-icon"><i class="remove icon"></i></div>
+        </div>
+      {{/each}}
+    </div>
+  </form>
+</template>

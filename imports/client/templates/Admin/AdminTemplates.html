@@ -1,0 +1,147 @@
+<template name="AdminDashboard">
+	{{#if isDefined adminWidgets}}
+		{{#each adminWidgets}}
+			{{> UI.dynamic template=template data=data}}
+		{{/each}}
+	{{else}}
+		{{> adminDefaultWidgets}}
+	{{/if}}
+</template>
+
+<template name="AdminDashboardNew">
+	{{> adminAlert}}
+	{{#if adminTemplate admin_collection_name 'new'}}
+		{{#with adminTemplate admin_collection_name 'new'}}
+			{{> UI.dynamic template=name data=data }}
+		{{/with}}
+	{{else}}
+		<div class="box box-default">
+			<div class="box-body">
+				{{> quickForm id="admin_insert" collection=admin_collection fields=admin_fields omitFields=admin_omit_fields buttonContent='Create'}}
+			</div>
+		</div>
+	{{/if}}
+</template>
+
+<template name="AdminDashboardEdit">
+	{{> adminAlert}}
+	{{#if adminTemplate admin_collection_name 'edit'}}
+		{{#with adminTemplate admin_collection_name 'edit'}}
+			{{> UI.dynamic template=name data=data }}
+		{{/with}}
+	{{else}}
+		<div class="box box-default">
+			<div class="box-body">
+				{{#if admin_current_doc}}
+					{{> quickForm id="admin_update" collection=admin_collection schema=admin_schemas doc=admin_current_doc fields=admin_fields omitFields=admin_omit_fields buttonContent='Update'}}
+				{{/if}}
+			</div>
+		</div>
+	{{/if}}
+</template>
+
+<template name="AdminDashboardViewWrapper">
+	<div></div>
+	{{! This template is used to manually re-render AdminDashboardView on route transition }}
+</template>
+
+<template name="AdminDashboardView">
+	{{> adminAlert}}
+	{{#if adminTemplate admin_collection_name 'view'}}
+		{{#with adminTemplate admin_collection_name 'view'}}
+			{{> UI.dynamic template=name data=data }}
+		{{/with}}
+	{{else}}
+		{{#if hasDocuments}}
+			{{> tabular table=admin_table class="table dataTable"}}
+		{{else}}
+			<div class="alert alert-info">
+				<p>There are no visible items in this collection.</p>
+				<p><a href="{{newPath}}" class="ui button tiny"><i class="ui icon plus"></i> Add one</a></p>
+			</div>
+		{{/if}}
+	{{/if}}
+</template>
+
+<template name="AdminDashboardUsersNew">
+	<div class="box box-default">
+		<div class="box-body">
+			{{> adminAlert}}
+				{{# autoForm id="adminNewUser" schema=AdminSchemas.newUser type="method" meteormethod="adminNewUser"}}
+
+				{{>afQuickField name="email"}}
+				{{>afQuickField name="chooseOwnPassword"}}
+				{{>afQuickField type="select-checkbox-inline" options=optionsRoles name="roles"}}
+
+				{{#if afFieldValueIs name="chooseOwnPassword" value=false}}
+
+					{{>afQuickField name="password"}}
+					{{>afQuickField name="sendPassword"}}
+
+				{{/if}}
+
+				<button type="submit" class="ui button tiny">Add User</button>
+
+			{{/autoForm}}
+		</div>
+	</div>
+</template>
+
+<template name="AdminDashboardUsersEdit">
+	<div class="box box-default">
+		<div class="box-body">
+			{{> adminAlert}}
+			{{#if adminGetUserSchema}}
+				{{> quickForm id="adminUpdateUser" buttonContent="Update" buttonClasses="ui button tiny btn-sm" collection=adminGetUsers schema=adminGetUserSchema doc=admin_current_doc omitFields="roles,services"}}
+				<hr/>
+			{{/if}}
+
+			<h4>User Roles</h4>
+			{{#each roles}}
+				<button class="ui button tiny btn-remove-role" role="{{this}}" user="{{admin_current_id}}">{{this}}</button>
+			{{/each}}
+			{{#each otherRoles}}
+				<button class="ui button tiny btn-add-role" role="{{this}}" user="{{admin_current_id}}">{{this}}</button>
+			{{/each}}
+			{{#if roles}}
+				<p style="margin-top:5px;">Click a role to toggle it.</p>
+			{{else}}
+				<p>User not in any roles. Click a role to add it to a user.</p>
+			{{/if}}
+		</div>
+	</div>
+</template>
+
+<template name="adminAlert">
+	{{#if $.Session.get 'adminSuccess'}}
+		<div class="alert alert-success admin-alert">
+			{{$.Session.get 'adminSuccess'}}
+		</div>
+	{{/if}}
+
+	{{#if $.Session.get 'adminError'}}
+		<div class="alert alert-danger admin-alert">
+			{{$.Session.get 'adminError'}}
+		</div>
+	{{/if}}
+</template>
+
+<template name="adminUsersIsAdmin">
+	{{#if adminIsUserInRole this._id 'admin'}}<i class="ui icon check"></i>{{/if}}
+</template>
+
+<template name="adminUsersMailBtn">
+	<a href="mailto:{{adminUserEmail this}}" class="ui button tiny"><i class="ui icon envelope"></i></a>
+</template>
+
+<template name="adminEditBtn">
+	<a href="{{path}}" class="ui button tiny"><i class="ui icon pencil"></i></a>
+</template>
+
+<template name="adminCsvBtn">
+	<a data-id="{{_id}}" class="csvDownload ui button tiny"><i class="ui icon doc"></i></a>
+</template>
+
+<template name="adminDeleteBtn">
+	<a doc="{{_id}}" class="ui button tiny red btn-delete"><i class="ui icon trash" doc="{{_id}}"></i></a>
+</template>

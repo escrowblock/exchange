@@ -1,0 +1,144 @@
+.talks {
+    .scroll-pane {
+        max-height: 600px;
+        min-height: 300px;
+        margin-bottom: 1em;
+    }
+    
+    .ui.feed > .event > .label + .content {
+        margin: 1px 1em 1px 1.14285714em !important;
+    }
+    
+    .ui.feed > .event > .content .extra.text {
+        margin-left: 0.5em;
+        max-width: 100%;
+    }
+    
+    .ui.feed {
+        .event {
+            margin-bottom: 2px;
+            padding: 0px;
+            &.left {
+                .content {
+                    background-color: #efefef;
+                    padding: 0.5em;
+                    border-radius: 1em;
+                    border-top-left-radius: 0px;
+                    margin-left: 3.6em;
+                    margin-right: 1em;
+                }
+            }
+            
+            &.right {
+                .content {
+                    background-color: #f1daf9;
+                    padding: 0.5em;
+                    border-radius: 1em;
+                    border-top-left-radius: 0px;
+                    margin-left: 3.6em;
+                    margin-right: 1em;
+                }
+            }
+        }
+    }
+    
+    #bodyMessageCounter {
+        position: absolute;
+        right: 20px;
+        top: 0px;
+    }
+    
+    #attachFileToTalk {
+        position: absolute;
+        top: 20px;
+        right: 15px;
+    }
+    
+    #sendMessage {
+        position: absolute;
+        top: 55px;
+        right: 15px;
+    }
+    
+    #bodyMessage {
+        min-height: 100px;
+        padding-right: 280px;
+    }
+    
+    #uploadFile {
+      position: absolute;
+      top: 15px;
+      right: 75px;
+      #ui_file_list {
+        height: 75px;
+        overflow: auto;
+        background: #efefef;
+        width: 200px;
+        border: 1px solid #ccc;
+        border-radius: 15px;
+        padding: 5px;
+      }
+      .remove-file {
+        font-size: 0;
+        .remove-file-name {
+          font-size: 15px;
+          display: inline-block;
+          width: 70%;
+          text-overflow: ellipsis;
+          overflow: hidden;
+          white-space: nowrap;
+        }
+        .remove-file-icon {
+          font-size: 15px;
+          vertical-align: top;
+          display: inline-block;
+          width: 30%;
+          text-align: right;
+          padding-right: 15px;
+          i {
+            cursor: pointer;
+          }
+        }
+      }
+    }
+    
+    .talk-status.online {
+        background: #21ba45;
+        height: 7px;
+        width: 7px;
+        position: relative;
+        top: -3px;
+        display: inline-block;
+        border-radius: 50%;
+    }
+    
+    .talk-status.offline {
+        background: #db2828;
+        height: 7px;
+        width: 7px;
+        position: relative;
+        top: -3px;
+        display: inline-block;
+        border-radius: 50%;
+    }
+    
+    #callArbitration {
+        margin-bottom: 0.5em;
+    }
+}
+
+
+@media screen and (max-width: 767px) {
+    .talks {
+         #bodyMessage {
+            padding-right: 3em;
+        }
+            
+        #uploadFile {
+            position: initial;
+            #ui_file_list {
+              width: 100%;
+            }
+        }
+    }
+}

@@ -1,0 +1,21 @@
+<template name="afArrayField_nothing">
+  <div class="panel panel-default">
+    <div class="panel-heading">{{afFieldLabelText name=this.atts.name}}</div>
+    {{#if afFieldIsInvalid name=this.atts.name}}
+    <div class="panel-body has-error">
+      <span class="help-block">{{{afFieldMessage name=this.atts.name}}}</span>
+    </div>
+    {{/if}}
+    <ul class="list-group">
+      {{#afEachArrayItem name=this.atts.name minCount=this.atts.minCount maxCount=this.atts.maxCount}}
+      <li class="list-group-item autoform-array-item">
+        <div>
+          <div class="autoform-array-item-body">
+            {{> afQuickField name=this.name label=false options=afOptionsFromSchema}}
+          </div>
+        </div>
+      </li>
+      {{/afEachArrayItem}}
+    </ul>
+  </div>
+</template>

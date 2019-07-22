@@ -1,0 +1,89 @@
+<template name="Transactions">
+  <div class="ui raised very padded container">
+	    <div class="ui centered grid">
+	      <div class="column">
+	        <div class="row">
+				<div class="ui grid">
+					{{#div class="eight wide left aligned middle aligned column"}}
+						<h2 class="ui header left aligned">
+					        {{_ "Transactions" }}
+					    </h2>
+					{{/div}}
+				</div>
+	        </div>
+			<div class="row">
+				<div class="ui stackable one column grid">
+					<div class="column">
+			            <table class="ui fixed single line celled small compact table Transactions">
+			              <thead>
+			                <tr>
+			                  <th title="{{_ "Product symbol" }}">{{_ "Product symbol" }}</th>
+			                  <th title="{{_ "Transaction type" }}">{{_ "Transaction type" }}</th>
+			                  <th title="{{_ "Credit" }}">{{_ "Credit" }}</th>
+			                  <th title="{{_ "Debit" }}">{{_ "Debit" }}</th>
+			                  <th title="{{_ "Balance" }}">{{_ "Balance" }}</th>
+			                  <th title="{{_ "Reference" }}">{{_ "Reference" }}</th>
+			                  <th title="{{_ "Time" }}">{{_ "Time" }}</th>
+			                </tr>
+			              </thead>
+			              <tbody>
+			                {{#if MyTransactionsCount }}
+			                  {{#each MyTransactions}}
+			                    <tr>
+			                      <td title="{{ ProductSymbol }}">
+			                        {{ ProductSymbol }}
+			                      </td>
+			                      <td title="{{ TransactionType }}">
+			                        {{ TransactionType }}
+			                      </td>
+			                      <td title="{{ Credit }}">
+			                        {{ Credit }}
+			                      </td>
+			                      <td title="{{ Debit }}">
+			                        {{ Debit }}
+			                      </td>
+			                      <td title="{{ Balance }}">
+			                        {{ Balance }}
+			                      </td>
+			                      <td title="{{ReferenceType}}: {{ReferenceId}}">
+			                        {{ReferenceType}}: {{ReferenceId}}
+			                      </td>
+			                      <td title="{{formatDate TimeStamp "Do MMM YYYY HH:mm:ss"}}">
+			                        {{ formatDate TimeStamp "Do MMM YYYY HH:mm:ss"}}
+			                      </td>
+			                    </tr>
+			                  {{/each}}
+			                {{else}}
+			                  <tr>
+			                  	{{#if notFirstPage}}
+			                  		<td colspan="7"> <a id="goToPreviousTransactionPage">{{_ "Go to the previous page"}}</a></td>
+			                  	{{else}}
+			                    	<td colspan="7">{{_ "You don't have transactions"}}</td>
+			                    {{/if}}	
+			                  </tr>
+			                {{/if}}
+			              </tbody>
+			              {{#if MyTransactionsCount }}
+			                <tfoot>
+			                  <tr>
+			                    <th colspan="7">
+			                      <div class="ui right floated pagination menu">
+			                        <a class="icon item my-transactions-count-left">
+			                          <i class="left chevron icon"></i>
+			                        </a>
+			                        <a class="icon item my-transactions-count-right">
+			                          <i class="right chevron icon"></i>
+			                        </a>
+			                      </div>
+			                    </th>
+			                  </tr>
+			                </tfoot>
+			              {{/if}}
+			            </table>
+					</div>
+				</div>
+			</div>
+	      </div>
+	    </div>
+	</div>
+</template>

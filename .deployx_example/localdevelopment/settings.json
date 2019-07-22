@@ -1,0 +1,39 @@
+{
+  "public": {
+    "version": "0.0.0",
+    "_languageOverride": "us",
+    "debug": true,
+    "ipfs": false,
+    "sandbox": true,
+    "sitename": "ESCB exchange",
+    "imagePath": "../../../../../../private/files",
+    "appName": "add me please",
+    "persistent_session": {
+      "default_method": "persistent"
+    },
+    "infura_token": "add me please",
+    "blockchain": {
+      "HMW": "add me please",
+      "gas": 200000,
+      "gasPrice": 10000000000
+    },
+    "OTP": {
+      "expiration": 5
+    },
+    "senderID": "add me please",
+    "contactmail": "add me please",
+    "noreplymail": "add me please",
+    "inactivityTimeout": 3600000,
+    "limitOrder": 10,
+    "limitTransaction": 10
+  },
+  "accounts-lockout": {
+    "duration": 600,
+    "attempts": 5
+  },
+  "private": {
+    "lhttps": false,
+    "telegramToken": "add me please",
+    "gcmKey": "add me please"
+  }
+}

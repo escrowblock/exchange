@@ -1,0 +1,90 @@
+<template name="Balances">
+  <div class="ui raised very padded container">
+	    <div class="ui centered grid">
+	      <div class="column">
+	        <div class="row">
+				<div class="ui grid">
+					{{#div class="eight wide left aligned middle aligned column"}}
+						<h2 class="ui header left aligned">
+					        {{_ "Account balances" }}
+					    </h2>
+					{{/div}}
+					{{#div class="eight wide right aligned middle aligned column"}}
+						<div class="ui left icon small input balance-search-wrapper">
+		                    <i class="search icon"></i>
+		                    <input type="text" id="balances_ProductSymbolSearch" name="search" placeholder="{{_ "Search" }}">
+		                </div>
+                	{{/div}}
+				</div>
+	        </div>
+			<div class="row">
+				<div class="ui stackable one column grid">
+					<div class="column">
+						<table class="ui sortable celled small table balances_product">
+						    <thead>
+						      <tr>
+						        <th>{{_ "Symbol" }}</th>
+						        <th>{{_ "Full name" }}</th>
+						        <th>{{_ "Balance" }}</th>
+						        <th>{{_ "In trade" }}</th>
+						        <th>{{_ "Last action date" }}</th>
+						        <th>{{_ "Action" }}</th>
+						      </tr>
+						    </thead>
+					    	<tbody>
+								{{#each item in products}}
+							      <tr>
+							        <td>{{item.ProductSymbol}}</td>
+							        <td>{{item.ProductFullName}}</td>
+							        <td>{{balance item.ProductSymbol}}</td>
+							        <td>{{intrade item.ProductSymbol}}</td>
+							        <td>{{timestamp item.ProductSymbol}}</td>
+							        <td>
+							        	<div class="ui grid">
+							        		<div class="eight wide column">
+								            	<button class="ui button small fluid purple withdraw" {{disabled item.ProductSymbol "withdraw"}} data-symbol="{{item.ProductSymbol}}">{{_ "Withdraw"}}</button>
+								        	</div>
+											<div class="eight wide column">
+								            	<button class="ui button small fluid green deposit" {{disabled item.ProductSymbol "deposit"}} data-symbol="{{item.ProductSymbol}}">{{_ "Deposit"}}</button>
+								        	</div>
+								        </div>
+							            {{#if disabledDescripton item.ProductSymbol}}
+							            <div class="ui grid">
+							        		<div class="sixteen wide column">
+								            	<i class="question icon"></i>
+								            	<span class="disabledDescripton">{{disabledDescripton item.ProductSymbol}}</span>
+								            </div>
+								        </div>
+							            {{/if}}
+							        </td>
+							      </tr>
+								{{/each}}
+					    	</tbody>
+							<!--
+						    <tfoot>
+						      <tr>
+						        <th colspan="6">
+						          <div class="ui right floated pagination menu">
+						            <a class="icon item">
+						              <i class="left chevron icon"></i>
+						            </a>
+						            <a class="item">1</a>
+						            <a class="item">2</a>
+						            <a class="item">3</a>
+						            <a class="item">4</a>
+						            <a class="icon item">
+						              <i class="right chevron icon"></i>
+						            </a>
+						          </div>
+						        </th>
+						      </tr>
+						    </tfoot>
+							-->
+					  </table>
+					</div>
+				</div>
+			</div>
+	      </div>
+	    </div>
+	</div>
+</template>

@@ -1,0 +1,28 @@
+<template name="Notifications">
+	{{#if notEmpty}}
+		<div class="ui button mini grey notification-mark js-mark-notification">{{_ "Mark everything as read" }}</div>
+		<div class="ui celled list">
+			{{#each notifications}}
+				{{> NotificationItem }}
+			{{/each}}
+		</div>
+	{{else}}
+		<h3 class="ui header">{{_ "Empty list" }}</h3>
+	{{/if}}
+</template>
+
+<template name="NotificationItem">
+	<div class="item">
+		<div class="right floated content">
+	        <div class="ui button mini green {{ markAsRead }}" data-id="{{_id}}">{{_ "Mark as read"}}</div>
+	    </div>
+		<div class="content">
+			<div class="header">
+				{{#if CreatedAt}}
+					<time datetime="{{CreatedAt}}">{{date}}</time>
+				{{/if}}
+			</div>
+			<a href="{{link}}">{{Message}}</a>
+		</div>
+	</div>
+</template>

@@ -1,0 +1,15 @@
+{
+  "name": "Push Api",
+  "short_name": "Push Api",
+  "icons": [{
+    "src": "/img/push-icon.png",
+    "sizes": "111x111"
+  }],
+  "start_url": "/",
+  "display": "standalone",
+  "gcm_sender_id": "300480364533",
+  "gcm_user_visible_only": true,
+  "permissions": [
+    "gcm"
+  ]
+}

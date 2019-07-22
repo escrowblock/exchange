@@ -1,0 +1,81 @@
+<template name="Otp">
+  {{#if codeChecked }}
+    <div class="ui stackable centered grid">
+      <div class="column">
+        <div class="row">
+          <h2 class="ui header">
+            {{_ "2-factor authentication checking" }}
+          </h2>
+        </div>
+      </div>
+    </div>
+    <div class="ui middle center aligned grid">
+      <div class="ui input attached action">
+        <input id="codeOTPVerification" type="text" placeholder="{{_ "Code..." }}">
+        <div id="checkOTPVerification" class="ui button yellow">{{_ "Check OTP"}}</div>
+      </div>
+    </div>
+  {{else}}
+    <div class="ui middle center aligned grid">
+      <div class="column">
+        <div class="ui form loading" id="otpWrapper">
+          <img id="otpImage" src=""/>
+          <br/>
+          <a id="otpUrl">{{_ "OTP url"}}</a>
+          <br/>
+          <p id="otpCode"></p>
+          <br/>
+        
+          <div class="ui input attached action">
+            <input id="codeOTP" type="text" placeholder="{{_ "Code..." }}">
+            <div id="checkOTP" class="ui button yellow">{{_ "Check OTP"}}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="ui divider hidden"></div>
+    
+    <div class="ui ignored red message">
+      <i class="icon info"></i>
+      {{{_ "OTP description" }}}
+    </div>
+      
+    <div class="ui middle grid">
+      <div class="ui grid container">
+        <div class="sixteen wide column">
+          <table class="ui celled unstackable table">
+            <thead>
+              <tr>
+                <th>{{_ "Platform" }}</th>
+                <th>{{_ "Url" }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Android</td>
+                <td><a target="_blank" href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2">{{_ "Download"}}</a></td>
+              </tr>
+              <tr>
+                <td>iOS</td>
+                <td><a target="_blank" href="https://itunes.apple.com/app/google-authenticator/id388497605?mt=8">{{_ "Download"}}</a></td>
+              </tr>
+              <tr>
+                <td>{{_ "Chrome extension" }}</td>
+                <td><a target="_blank" href="https://chrome.google.com/webstore/detail/bhghoamapcdpbohphigoooaddinpkbai">{{_ "Download"}}</a></td>
+              </tr>
+              <tr>
+                <td>Java GUI</td>
+                <td><a target="_blank" href="https://github.com/mclamp/jauth#readme">{{_ "Download"}}</a></td>
+              </tr>
+              <tr>
+                <td>HTML5</td>
+                <td><a target="_blank" href="https://github.com/gbraad/html5-google-authenticator">{{_ "Download"}}</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  {{/if}}
+</template>

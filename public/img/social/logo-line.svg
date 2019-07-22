@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 21.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Слой_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 34.8 35.8" style="enable-background:new 0 0 34.8 35.8;" xml:space="preserve">
+<style type="text/css">
+	.st0{filter:url(#a);}
+	.st1{fill:#00C200;}
+	.st2{fill:#FFFFFF;}
+	.st3{fill:#00C500;}
+</style>
+<filter  filterUnits="objectBoundingBox" height="143.3%" id="a" width="112.9%" x="-6.5%" y="-20.8%">
+	<feOffset  dy="2" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+	<feGaussianBlur  in="shadowOffsetOuter1" result="shadowBlurOuter1" stdDeviation="17"></feGaussianBlur>
+	<feComposite  in="shadowBlurOuter1" in2="SourceAlpha" operator="out" result="shadowBlurOuter1"></feComposite>
+	
+		<feColorMatrix  in="shadowBlurOuter1" result="shadowMatrixOuter1" values="0 0 0 0 0.838985167 0 0 0 0 0.854037415 0 0 0 0 0.912096088 0 0 0 1 0">
+		</feColorMatrix>
+	<feMerge>
+		<feMergeNode  in="shadowMatrixOuter1"></feMergeNode>
+		<feMergeNode  in="SourceGraphic"></feMergeNode>
+	</feMerge>
+</filter>
+<g transform="translate(32 30)" class="st0">
+	<circle class="st1" cx="-14.6" cy="-11.6" r="15.9"/>
+	<path class="st2" d="M-2.6-11.6c0.1-0.3,0.1-0.5,0.1-0.7c0-0.3,0-0.8,0-0.9c-0.3-5.1-5.5-9.2-12-9.2c-6.6,0-12,4.3-12,9.7
+		c0,4.9,4.5,9,10.4,9.6c0.4,0,0.6,0.4,0.6,0.7l-0.2,2.3c0,0.4,0.2,0.7,0.6,0.7c0.1,0,0.3,0,0.4-0.1c5-2.4,7.9-4.9,9.7-7.1
+		c0.3-0.4,1.4-1.9,1.6-2.3C-3.1-9.8-2.7-10.7-2.6-11.6z"/>
+	<path class="st3" d="M-21.2-10.8v-4.1c0-0.3-0.3-0.6-0.7-0.6c-0.4,0-0.7,0.3-0.7,0.6v4.7c0,0.3,0.3,0.6,0.7,0.6h2.7
+		c0.4,0,0.7-0.3,0.7-0.6s-0.3-0.6-0.7-0.6H-21.2z"/>
+	<path class="st3" d="M-17.9-9.5h-0.2c-0.2,0-0.4-0.2-0.4-0.5v-5c0-0.3,0.2-0.5,0.4-0.5h0.2c0.2,0,0.4,0.2,0.4,0.5v5
+		C-17.5-9.7-17.7-9.5-17.9-9.5z M-12.8-14.9v2.9c0,0-2.6-3.3-2.6-3.3c-0.1-0.1-0.3-0.2-0.5-0.2c-0.3,0-0.6,0.3-0.6,0.7v4.7
+		c0,0.3,0.3,0.6,0.6,0.6c0.4,0,0.6-0.3,0.6-0.6V-13c0,0,2.6,3.3,2.6,3.3c0.1,0.1,0.3,0.2,0.4,0.2c0.4,0,0.6-0.3,0.6-0.7v-4.7
+		c0-0.4-0.3-0.6-0.6-0.6C-12.5-15.5-12.8-15.2-12.8-14.9z M-6.5-14.9c0-0.3-0.3-0.6-0.7-0.6h-2.7c-0.4,0-0.7,0.3-0.7,0.6v4.7
+		c0,0.3,0.3,0.6,0.7,0.6h2.7c0.4,0,0.7-0.3,0.7-0.6s-0.3-0.6-0.7-0.6h-2v-1.1h2c0.4,0,0.7-0.3,0.7-0.6s-0.3-0.6-0.7-0.6h-2v-1.1h2
+		C-6.8-14.2-6.5-14.5-6.5-14.9z"/>
+</g>
+</svg>

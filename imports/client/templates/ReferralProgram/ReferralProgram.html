@@ -1,0 +1,124 @@
+<template name="ReferralProgram">
+  <div class="ui raised very padded container">
+    <div class="ui attached tabular stackable menu referralTabs">
+      <a class="active item" data-tab="first">{{_ "Social Media" }}</a>
+      <a class="item" data-tab="second">{{_ "Share on Messenger" }}</a>
+      <a class="item" data-tab="third">{{_ "Bitcointalk Signature" }}</a>
+    </div>
+    <div class="ui bottom attached active tab segment referralTabItem" data-tab="first">
+      <div class="ui stackable grid">
+        <div class="three wide center aligned column itemSelect {{selected 'facebook'}}" data-item="facebook">
+          <div class="referral-item-wrapper">
+            <img class="ui centered mini image" src="/img/social/logo-facebook.svg"/><br/>
+            <div>{{_ "%s share" "Facebook"}}</div>
+          </div>
+        </div>
+        <div class="three wide center aligned column itemSelect {{selected 'twitter'}}" data-item="twitter">
+          <div class="referral-item-wrapper">
+            <img class="ui centered mini image" src="/img/social/logo-twitter.svg"/><br/>
+            <div>{{_ "%s share" "Twitter"}}</div>
+          </div>
+        </div>
+        <div class="three wide center aligned column itemSelect {{selected 'linkedin'}}" data-item="linkedin">
+          <div class="referral-item-wrapper">
+            <img class="ui centered mini image" src="/img/social/logo-linkedin.svg"/><br/>
+            <div>{{_ "%s share" "LinkedIn"}}</div>
+          </div>
+        </div>
+        <div class="three wide center aligned column itemSelect {{selected 'xing'}}" data-item="xing">
+          <div class="referral-item-wrapper">
+            <img class="ui centered mini image" src="/img/social/logo-xing.svg"/><br/>
+            <div>{{_ "%s share" "Xing"}}</div>
+          </div>
+        </div>
+        <div class="three wide center aligned column itemSelect {{selected 'vk'}}" data-item="vk">
+          <div class="referral-item-wrapper">
+            <img class="ui centered mini image" src="/img/social/logo-vk.svg"/><br/>
+            <div>{{_ "%s share" "Vk"}}</div>
+          </div>
+        </div>
+        <div class="three wide center aligned column itemSelect {{selected 'baidu'}}" data-item="baidu">
+          <div class="referral-item-wrapper">
+            <img class="ui centered mini image" src="/img/social/logo-baidu.svg"/><br/>
+            <div>{{_ "%s share" "Baidu"}}</div>
+          </div>
+        </div>
+        <div class="three wide center aligned column itemSelect {{selected 'reddit'}}" data-item="reddit">
+          <div class="referral-item-wrapper">
+            <img class="ui centered mini image" src="/img/social/logo-reddit.svg"/><br/>
+            <div>{{_ "%s share" "Reddit"}}</div>
+          </div>
+        </div>
+        <div class="three wide center aligned column itemSelect {{selected 'weibo'}}" data-item="weibo">
+          <div class="referral-item-wrapper">
+            <img class="ui centered mini image" src="/img/social/logo-weibo.svg"/><br/>
+            <div>{{_ "%s share" "Weibo"}}</div>
+          </div>
+        </div>
+        <div class="three wide center aligned column itemSelect {{selected 'other'}}" data-item="other">
+          <div class="referral-item-wrapper">
+            <img class="ui centered mini image" src="/img/social/logo-other.svg"/><br/>
+            <div>{{_ "%s share" "Other"}}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="ui bottom attached tab segment referralTabItem" data-tab="second">
+      <div class="ui raised very padded container">
+        <div class="ui stackable grid">
+          <div class="three wide center aligned column itemSelect {{selected 'skype'}}" data-item="skype">
+            <div class="referral-item-wrapper">
+              <img class="ui centered mini image" src="/img/social/logo-skype.svg"/><br/>
+              <div>{{_ "%s share" "Skype"}}</div>
+            </div>
+          </div>
+          <div class="three wide center aligned column itemSelect {{selected 'telegram'}}" data-item="telegram">
+            <div class="referral-item-wrapper">
+              <img class="ui centered mini image" src="/img/social/logo-telegram.svg"/><br/>
+              <div>{{_ "%s share" "Telegram"}}</div>
+            </div>
+          </div>
+          <div class="three wide center aligned column itemSelect {{selected 'whatsapp'}}" data-item="whatsapp">
+            <div class="referral-item-wrapper">
+              <img class="ui centered mini image" src="/img/social/logo-whatsapp.svg"/><br/>
+              <div>{{_ "%s share" "Whatsapp"}}</div>
+            </div>
+          </div>
+          <div class="three wide center aligned column itemSelect {{selected 'messenger'}}" data-item="messenger">
+            <div class="referral-item-wrapper">
+              <img class="ui centered mini image" src="/img/social/logo-messenger.svg"/><br/>
+              <div>{{_ "%s share" "Messenger"}}</div>
+            </div>
+          </div>
+          <div class="three wide center aligned column itemSelect {{selected 'viber'}}" data-item="viber">
+            <div class="referral-item-wrapper">
+              <img class="ui centered mini image" src="/img/social/logo-viber.svg"/><br/>
+              <div>{{_ "%s share" "Viber"}}</div>
+            </div>
+          </div>
+          <div class="three wide center aligned column itemSelect {{selected 'line'}}" data-item="line">
+            <div class="referral-item-wrapper">
+              <img class="ui centered mini image" src="/img/social/logo-line.svg"/><br/>
+              <div>{{_ "%s share" "Line"}}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="ui bottom attached tab segment referralTabItem" data-tab="third">
+      <div class="ui form">
+        <div class="field">
+          <div class="field">
+            <label>{{_ "Signature" }}</label>
+            <div class="ui action input">
+              <input type="text" readonly id="bodySignature" value="{{bodySignature}}"/>
+              <button id="copySignature" class="ui blue button">
+                <i class="copy icon"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

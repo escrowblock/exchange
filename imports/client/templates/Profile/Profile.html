@@ -1,0 +1,124 @@
+<template name="Profile">
+  <div class="ui attached tabular stackable menu profileTabs">
+    <a class="active item" data-tab="profile">{{_ "Profile" }}</a>
+    <a class="item" data-tab="referral">{{_ "Referral program" }}</a>
+    <a class="item" data-tab="api">{{_ "API" }}</a>
+  </div>
+  <div class="ui bottom attached active tab segment" data-tab="profile">
+    <div class="ui stackable centered grid">
+      <div class="column">
+        <div class="row">
+          <h2 class="ui header">
+            {{_ "Your profile and secure options" }}
+          </h2>
+        </div>
+      </div>
+    </div>
+    {{#autoForm schema=ProfileSchema id="Profile" type="normal" doc=this validation="keyup" template="semanticUI"}}
+    <div class="ui form" id="profileForm">
+      <div class="ui stackable two column grid segment">
+        <div class="column with-description">
+          {{> afQuickFieldI18n leftIcon="user" label=false name="UserName" placeholder="Ms. Peter"}}
+          <div class="description">{{_ "This name will be shown in Talk section instead Some conterpart name" }}</div>
+        </div>
+        <div class="column with-description">
+          {{> afQuickFieldI18n leftIcon="mail" label=false name="Email" placeholder="jhon@domain.net"}}
+          <div class="description">{{_ "This email needs for activationg notification and white list IP feature" }}</div>
+        </div>
+        <div class="column with-description">
+          {{> afQuickFieldI18n leftIcon="telegram" label=false name="Telegram" placeholder="@bot"}}
+          <div class="description">{{_ "TELEGRAM_NOTIFICATION_DESC" }}</div>
+        </div>
+        <div class="column">
+          <div class="ui stackable three column grid">
+            <div class="column with-description">
+              {{> afQuickFieldI18n leftIcon="lock" label="Use OTP" name="UseOTP"}}
+              <div class="description">{{_ "Activate this option for 2-factor authorization" }}</div>
+            </div>
+            <div class="column with-description">
+              {{> afQuickFieldI18n leftIcon="link" label="Use white list IP" name="UseWhiteListIP"}}
+              <div class="description">{{_ "OPTION_RESTRICT_ACCESS_IP" }}</div>
+            </div>
+            <div class="column with-description">
+  
+              <div class="ui left icon fluid input field">
+                <i class="alarm icon"></i>
+                <div class="ui checkbox disabled">
+                  <input {{getPushStatus}} disabled="disabled" lefticon="alarm" class="hidden" type="checkbox">
+                  <label>{{_ "Push notification" }}</label>
+                </div>
+              </div>
+  
+              <div class="description">{{_ "Push notifications can be enabled/disabled on your smartphone or in a browser." }}</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="ui stackable one column grid segment">
+        <div class="column with-description">
+          {{> afQuickFieldI18n label=false name="InitialMessage" placeholder="Hi, my card number is **** **** **** ****"}}
+          <div class="description">{{_ "INITIAL_MESSAGE_DEFERRED_TRADE" }}</div>
+        </div>
+      </div>
+        
+      {{> afQuickFieldI18n label=false name="UserId" value=currentUserid type="hidden"}}
+      
+      <div class="ui stackable grid">
+        <div class="nine wide right aligned column segment">
+          <button type="submit" class="ui button green" id="saveProfile">{{_ "Save" }}</button>
+        </div>
+      </div>
+    </div>
+    {{/autoForm}}
+  </div>
+  <div class="ui bottom attached tab segment" data-tab="referral">
+    <div class="ui stackable centered grid">
+      <div class="column">
+        <div class="row">
+          <h2 class="ui header">
+            {{_ "Referral program" }}
+          </h2>
+        </div>
+      </div>
+    </div>
+    {{> ReferralProgram }}
+  </div>
+  <div class="ui bottom attached tab segment" data-tab="api">
+    <div class="ui stackable centered grid">
+      <div class="column">
+        <div class="row">
+          <h2 class="ui header">
+            {{_ "API" }}
+          </h2>
+        </div>
+      </div>
+    </div>
+    <div class="ui form stackable grid segment" id="apiKeyForm">
+      <div class="seven wide column with-description">
+        <div class="ui action left icon fluid input field">
+          <i class="lock icon"></i>
+          <input lefticon="lock" name="key" readonly value="{{Key}}" id="APIKey" type="text">
+          <button id="copyKey" class="ui blue button">
+            <i class="copy icon"></i>
+          </button>
+        </div>
+        <div class="description">{{_ "This is Key for API communication" }}</div>
+      </div>
+      <div class="seven wide column with-description">
+        <div class="ui action left icon fluid input field">
+          <i class="user secret icon"></i>
+          <input lefticon="user secret" name="secret" readonly value="{{Secret}}" id="APISecret" type="text">
+          <button id="copySecret" class="ui blue button">
+            <i class="copy icon"></i>
+          </button>
+        </div>
+        <div class="description">{{_ "This is Secret for API communication" }}</div>
+      </div>
+      <div class="two wide column with-description">
+        <button type="submit" class="ui small button green" id="generateNewKey">{{_ "Generate new" }}</button>
+      </div>
+    </div>
+  </div>
+</template>

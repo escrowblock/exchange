@@ -1,0 +1,88 @@
+<template name="Indicators">
+  <span class="item current-time">
+    <span class="label">{{_ "Current time"}}</span>
+    <span class="value">{{currentTime}}</span>
+  </span>
+  <span class="item last-price">
+    <span class="label {{priceDirection}}">{{_ "Last price"}}</span>
+    <span class="value {{priceDirection}}">{{lastPrice}}</span>
+  </span>
+  <span class="item change24">
+    <span class="label">{{_ "24h change"}}</span>
+    <span class="value">{{change24Value}} {{change24Percent}}</span>
+  </span>
+  <span class="item max24">
+    <span class="label">{{_ "24h max"}}</span>
+    <span class="value">{{max24}}</span>
+  </span>
+  <span class="item min24">
+    <span class="label">{{_ "24h min"}}</span>
+    <span class="value">{{min24}}</span>
+  </span>
+  <span class="item volume24">
+     <span class="label">{{_ "24h volume"}}</span>
+     <span class="value">{{volume24}}</span>
+  </span>
+  <span class="item">
+    <div class="ui fluid dropdown instrumentSymbol">
+      <input type="hidden" id="InstrumentSymbol" name="InstrumentSymbol">
+      <i class="dropdown icon"></i>
+      <div class="default text">*</div>
+
+      <div class="menu">
+        <div class="ui grid">
+          
+          <div class="row">
+            <div class="sixteen wide column">
+              <div class="ui tabular instrument">
+                {{#each cat in Categories}}
+                  <a class="instrumentCategory" data-tab="{{cat.Short}}">{{cat.FullName}}</a>
+                {{/each}}
+              </div>
+              <div class="ui left icon small input instrument-search">
+                <i class="search icon"></i>
+                <input type="text" id="InstrumentSymbolSearch" name="search" placeholder="{{_ "Search" }}">
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            {{#each cat in Categories}}
+              <div class="ui bottom attached tab segment" data-tab="{{cat.Short}}">
+                <div class="scroll-pane">
+                  <table class="ui sortable celled small table instrument">
+                    <thead>
+                      <tr>
+                        <th> </th>
+                        <th>{{_ "Instrument"}}</th>
+                        <th>{{_ "Last price"}}</th>
+                        <th>{{_ "Changing 24 hrs"}}</th>
+                        <th>{{_ "Volume"}}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {{#each AvailableInstrument cat.Short}}
+                        <tr>
+                          <td><i data-instrumentsymbol="{{InstrumentSymbol}}" class="icon star {{favorite InstrumentSymbol}}"></i></td>
+                          <td class="item" data-value="{{InstrumentSymbol}}">{{InstrumentSymbol}}</td>
+                          <td>{{getLastPrice 2}}</td>
+                          <td>{{getPriceChangePercent 2}}</td>
+                          <td>{{getQuoteVolume 0}}</td>
+                        </tr>
+                      {{/each}}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            {{/each}}
+          </div>
+        </div>
+        
+      </div>
+
+    </div>
+  </span>
+  <span class="item changeTheme">
+    <i class="{{themeMode}} icon"></i>
+  </span>
+</template>

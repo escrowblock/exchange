@@ -1,0 +1,68 @@
+<template name="Home">
+  <div class="ui raised very padded container">
+    <div class="ui stackable centered grid">
+      <div class="column">
+        <div class="row">
+          <h2 class="ui header">
+            {{_ "Decentralized crypto-fiat exchange with ESCB9 protocol implementation" }}
+          </h2>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="ui raised very padded container">
+    <div class="ui stackable grid">
+      <div class="row">
+        <div class="ui left icon small input home-search-wrapper">
+          <i class="search icon"></i>
+          <input type="text" id="home_InstrumentSymbolSearch" name="search" placeholder="{{_ "Search" }}">
+        </div>
+        <div class="ui attached tabular menu">
+          {{#each cat in Categories}}
+            <a class="item {{active cat.Short}} home_instrumentCategory" data-tab="home_{{cat.Short}}">{{cat.FullName}}</a>
+          {{/each}}
+        </div>
+        {{#each cat in Categories}}
+          <div class="ui bottom attached tab segment {{active cat.Short}}" data-tab="home_{{cat.Short}}">
+            <table class="ui sortable celled small table home_instrument">
+              <thead>
+                <tr>
+                  <th> </th>
+                  <th>{{_ "Instrument"}}</th>
+                  <th>{{_ "Price change"}}</th>
+                  <th>{{_ "Changing 24 hrs"}}</th>
+                  <th>{{_ "Average price"}}</th>
+                  <th>{{_ "Open price"}}</th>
+                  <th>{{_ "Last price"}}</th>
+                  <th>{{_ "High price"}}</th>
+                  <th>{{_ "Low price"}}</th>
+                  <th>{{_ "Volume"}}</th>
+                  <th>{{_ "Quote volume"}}</th>
+                  <th>{{_ "Trade count"}}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{#each instruments cat.Short}}
+                  <tr>
+                    <td><i data-instrumentsymbol="{{InstrumentSymbol}}" class="icon star {{favorite InstrumentSymbol}}"></i></td>
+                    <td class="InstrumentSymbol" data-instrument="{{InstrumentSymbol}}">{{InstrumentSymbol}}</td>
+                    <td>{{PriceChange InstrumentSymbol 2}}</td>
+                    <td>{{PriceChangePercent InstrumentSymbol 2}}</td>
+                    <td>{{AveragePrice InstrumentSymbol 4}}</td>
+                    <td>{{OpenPrice InstrumentSymbol 4}}</td>
+                    <td>{{LastPrice InstrumentSymbol 4}}</td>
+                    <td>{{HighPrice InstrumentSymbol 4}}</td>
+                    <td>{{LowPrice InstrumentSymbol 4}}</td>
+                    <td>{{Volume InstrumentSymbol 0}}</td>
+                    <td>{{QuoteVolume InstrumentSymbol 0}}</td>
+                    <td>{{TradeCount InstrumentSymbol 0}}</td>
+                  </tr>
+                {{/each}}
+              </tbody>
+            </table>
+          </div>
+        {{/each}}
+      </div>
+    </div>
+  </div>
+</template>

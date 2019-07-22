@@ -1,0 +1,942 @@
+<template name="Trade">
+  <div class="trade-wrapper">
+
+    <div class="ui stackable centered grid">
+      <div class="nine wide center aligned column ChartWrapper">
+
+        <div class="row">
+          <div class="ui attached tabular stackable menu chartsTab">
+            <a class="active item" data-tab="chart">{{_ "Chart" }}</a>
+            <a class="item" data-tab="depth">{{_ "Depth diagram" }}</a>
+          </div>
+
+          <div class="ui bottom top attached active tab tab-charts Chart-tab-wrapper" data-tab="chart">
+            <div>
+              {{> React component=ChartComponent data=GetChartData}}
+            </div>
+            <div class="ui timeFrame-buttons">
+              <span> {{_ "Time" }}: </span>
+              <div class="ui selection search mini dropdown chartPeriod">
+                <input id="chartPeriodMinutes" type="hidden" name="chartPeriodMinutes">
+                <i class="dropdown icon"></i>
+                <div class="text">*</div>
+                <div class="menu">
+                  <div class="item" data-value="1m">1m</div>
+                  <div class="item" data-value="3m">3m</div>
+                  <div class="item" data-value="5m">5m</div>
+                  <div class="item" data-value="15m">15m</div>
+                  <div class="item" data-value="30m">30m</div>
+                  <div class="item" data-value="1h">1H</div>
+                  <div class="item" data-value="2h">2H</div>
+                  <div class="item" data-value="4h">4H</div>
+                  <div class="item" data-value="6h">6H</div>
+                  <div class="item" data-value="12h">12H</div>
+                  <div class="item" data-value="1d">1D</div>
+                  <div class="item" data-value="3d">3D</div>
+                  <div class="item" data-value="1w">1W</div>
+                  <div class="item" data-value="1M">1M</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ui bottom top attached tab tab-charts Chart-tab-wrapper" data-tab="depth">
+            {{#if showDepth}}
+              <div>
+                {{> React component=DepthComponent data=GetDepthData}}
+              </div>
+            {{/if}}
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="ui attached tabular stackable menu historyTab">
+            <a class="active item" data-tab="OpenOrders">{{_ "Open orders" }}</a>
+            <a class="item" data-tab="OrdersHistory">{{_ "Orders history" }}</a>
+            <a class="item" data-tab="TradesHistory">{{_ "Trades history" }}</a>
+          </div>
+
+          <div class="ui bottom top attached active tab OpenOrders-tab-wrapper" data-tab="OpenOrders">
+            <table class="ui fixed single line celled small compact table OpenOrders">
+              <thead>
+                <tr>
+                  <th title="{{_ "Instrument" }}">{{_ "Instrument" }}</th>
+                  <th title="{{_ "Side" }}">{{_ "Side" }}</th>
+                  <th title="{{_ "Order id" }}">{{_ "Order id" }}</th>
+                  <th title="{{_ "Price" }}">{{_ "Price" }}</th>
+                  <th title="{{_ "Quantity" }}">{{_ "Quantity" }}</th>
+                  <th title="{{_ "Quantity executed" }}">{{_ "Quantity executed" }}</th>
+                  <th title="{{_ "Order type" }}">{{_ "Order type" }}</th>
+                  <th title="{{_ "Triggers" }}">{{_ "Triggers" }}</th>
+                  <th title="{{_ "Order state" }}">{{_ "Order state" }}</th>
+                  <th title="{{_ "Receive time" }}">{{_ "Receive time" }}</th>
+                  <th title="{{_ "Action" }}">{{_ "Action" }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{#if MyOpenOrdersCount }}
+                  {{#each MyOpenOrders}}
+                    <tr>
+                      <td title="{{ InstrumentSymbol }}">
+                        {{ InstrumentSymbol }}
+                      </td>
+                      <td title="{{ Side }}">
+                        {{ Side }}
+                      </td>
+                      <td title="{{ _id }}">
+                        {{ _id }}
+                      </td>
+                      <td title="{{ Price }}">
+                        {{ Price }}
+                      </td>
+                      <td title="{{ Quantity }}">
+                        {{ Quantity }}
+                      </td>
+                      <td title="{{ QuantityExecuted}}">
+                        {{ QuantityExecuted }}
+                      </td>
+                      <td title="{{ OrderType }}">
+                        {{ OrderType }}
+                      </td>
+                      <td title="{{ Triggers }}">
+                        {{ Triggers }}
+                      </td>
+                      <td title="{{ OrderState }}">
+                        {{ OrderState }}
+                      </td>
+                      <td title="{{ formatDate ReceiveTime "Do MMM YYYY HH:mm:ss"}}">
+                        {{ formatDate ReceiveTime "Do MMM YYYY HH:mm:ss"}}
+                      </td>
+                      <td>
+                        <div class="ui buttons mini">
+                          <!--
+                          <button class="ui icon button brown button-edit-order" data="{{_id}}">
+                            <i class="edit icon"></i>
+                          </button>
+                          -->
+                          <button class="ui icon button black button-cancel-order" data="{{_id}}">
+                            <i class="cancel icon"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  {{/each}}
+                {{else}}
+                  <tr>
+                    {{#unless currentUserid}}
+                      <td colspan="11">{{{_ "<a href='%s'>Log in</a> to see your orders." "/wallet" }}}</td>
+                      {{else}}
+                      <td colspan="11">{{_ "You don't have open orders"}}</td>
+                    {{/unless}}
+                  </tr>
+                {{/if}}
+              </tbody>
+              {{#if MyOpenOrdersCount }}
+                <tfoot>
+                  <tr>
+                    <th colspan="11">
+                      <div class="ui right floated pagination menu">
+                        <a class="icon item my-open-orders-count-left">
+                          <i class="left chevron icon"></i>
+                        </a>
+                        <a class="icon item my-open-orders-count-right">
+                          <i class="right chevron icon"></i>
+                        </a>
+                      </div>
+                    </th>
+                  </tr>
+                </tfoot>
+              {{/if}}
+            </table>
+            
+            <div class="ui buttons mini cancel-buttons">
+              <span> {{_ "Cancel orders" }}: </span>
+              <button class="ui button yellow" id="cancelSell">{{_ "Sell" }}</button>
+              <button class="ui button orange" id="cancelBuy">{{_ "Buy" }}</button>
+              <button class="ui button red" id="cancelAll">{{_ "All" }}</button>
+            </div>
+          </div>
+
+          <div class="ui bottom top attached tab OrdersHistory-tab-wrapper" data-tab="OrdersHistory">
+            <table class="ui fixed single line celled small compact table OrdersHistory">
+              <thead>
+                <tr>
+                  <th title="{{_ "Instrument" }}">{{_ "Instrument" }}</th>
+                  <th title="{{_ "Side" }}">{{_ "Side" }}</th>
+                  <th title="{{_ "Order id" }}">{{_ "Order id" }}</th>
+                  <th title="{{_ "Price" }}">{{_ "Price" }}</th>
+                  <th title="{{_ "Quantity" }}">{{_ "Quantity" }}</th>
+                  <th title="{{_ "Quantity executed" }}">{{_ "Quantity executed" }}</th>
+                  <th title="{{_ "Order type" }}">{{_ "Order type" }}</th>
+                  <th title="{{_ "Triggers" }}">{{_ "Triggers" }}</th>
+                  <th title="{{_ "Order state" }}">{{_ "Order state" }}</th>
+                  <th title="{{_ "Receive time" }}">{{_ "Receive time" }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{#if MyOrdersHistoryCount }}
+                  {{#each MyOrdersHistory}}
+                    <tr>
+                      <td title="{{ InstrumentSymbol }}">
+                        {{ InstrumentSymbol }}
+                      </td>
+                      <td title="{{ Side }}">
+                        {{ Side }}
+                      </td>
+                      <td title="{{ _id }}">
+                        {{ _id }}
+                      </td>
+                      <td title="{{ Price }}">
+                        {{ Price }}
+                      </td>
+                      <td title="{{ Quantity }}">
+                        {{ Quantity }}
+                      </td>
+                      <td title="{{ QuantityExecuted }}">
+                        {{ QuantityExecuted }}
+                      </td>
+                      <td title="{{ OrderType }}">
+                        {{ OrderType }}
+                      </td>
+                      <td title="{{ Triggers }}">
+                        {{ Triggers }}
+                      </td>
+                      <td title="{{ OrderState }}">
+                        {{ OrderState }}
+                      </td>
+                      <td title="{{formatDate ReceiveTime "Do MMM YYYY HH:mm:ss"}}">
+                        {{formatDate ReceiveTime "Do MMM YYYY HH:mm:ss" }}
+                      </td>
+                    </tr>
+                  {{/each}}
+                {{else}}
+                  <tr>
+                    {{#unless currentUserid}}
+                      <td colspan="10">{{{_ "<a href='%s'>Log in</a> to see your orders." "/wallet" }}}</td>
+                      {{else}}
+                      <td colspan="10">{{_ "You don't have history orders"}}</td>
+                    {{/unless}}
+                  </tr>
+                {{/if}}
+              </tbody>
+              {{#if MyOrdersHistoryCount }}
+                <tfoot>
+                  <tr>
+                    <th colspan="10">
+                      <div class="ui right floated pagination menu">
+                        <a class="icon item my-orders-history-count-left">
+                          <i class="left chevron icon"></i>
+                        </a>
+                        <a class="icon item my-orders-history-count-right">
+                          <i class="right chevron icon"></i>
+                        </a>
+                      </div>
+                    </th>
+                  </tr>
+                </tfoot>
+              {{/if}}
+            </table>
+
+            <div class="ui checkbox orders-hide-checkbox">
+              <input type="checkbox" id="hidePairsOrdersHistory">
+              <label>{{_ "Hide other trading pairs" }}</label>
+            </div>
+
+          </div>
+          <div class="ui bottom top attached tab TradesHistory-tab-wrapper" data-tab="TradesHistory">
+            <form class="ui form tradeFilter">
+              <div class="fields">
+                <div class="field">
+                  <div class="ui right small labeled input">
+                    <label for="From" class="ui label">{{_ "From" }}</label>
+                    <input type="datetime-local" class="from" name="From" placeholder="{{_ "From" }}">
+                  </div>
+                </div>
+                <div class="field">
+                  <div class="ui right small labeled input">
+                    <label for="To" class="ui label">{{_ "To" }}</label>
+                    <input type="datetime-local" class="to" name="To">
+                  </div>
+                </div>
+                <div class="field">
+                  <button class="ui button mini green" id="buttonTradeFilter" type="submit">{{_ "Filter" }}</button>
+                </div>
+              </div>
+            </form>
+            <table class="ui fixed single line celled small compact table TradesHistory">
+              <thead>
+                <tr>
+                  <th title="{{_ "Instrument" }}">{{_ "Instrument" }}</th>
+                  <th title="{{_ "Side" }}">{{_ "Side" }}</th>
+                  <th title="{{_ "Order id" }}">{{_ "Order id" }}</th>
+                  <th title="{{_ "Price" }}">{{_ "Price" }}</th>
+                  <th title="{{_ "Quantity" }}">{{_ "Quantity" }}</th>
+                  <th title="{{_ "Remaining uantity" }}">{{_ "Remaining Quantity" }}</th>
+                  <th title="{{_ "Direction" }}">{{_ "Direction" }}</th>
+                  <th title="{{_ "Execution time" }}">{{_ "Execution time" }}</th>
+                  <th title="{{_ "Trade time" }}">{{_ "Trade time" }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{#if MyTradesHistoryCount }}
+                  {{#each MyTradesHistory}}
+                    <tr>
+                      <td title="{{ InstrumentSymbol }}">
+                        {{ InstrumentSymbol }}
+                      </td>
+                      <td title="{{ Side }}">
+                        {{ Side }}
+                      </td>
+                      <td title="{{ OrderId }}">
+                        {{ OrderId }}
+                      </td>
+                      <td title="{{ Price }}">
+                        {{ Price }}
+                      </td>
+                      <td title="{{ Quantity }}">
+                        {{ Quantity }}
+                      </td>
+                      <td title="{{ RemainingQuantity }}">
+                        {{ RemainingQuantity }}
+                      </td>
+                      <td title="{{ Direction }}">
+                        {{ Direction }}
+                      </td>
+                      <td title="{{ formatDate ExecutionTime "Do MMM YYYY HH:mm:ss"}}">
+                        {{ formatDate ExecutionTime "Do MMM YYYY HH:mm:ss"}}
+                      </td>
+                      <td title="{{ formatDate TradeTime "Do MMM YYYY HH:mm:ss"}}">
+                        {{ formatDate TradeTime "Do MMM YYYY HH:mm:ss"}}
+                      </td>
+                    </tr>
+                  {{/each}}
+                {{else}}
+                  <tr>
+                    {{#unless currentUserid}}
+                      <td colspan="9">{{{_ "<a href='%s'>Log in</a> to see your orders." "/wallet" }}}</td>
+                      {{else}}
+                      <td colspan="9">{{_ "You don't have history trades"}}</td>
+                    {{/unless}}
+                  </tr>
+                {{/if}}
+              </tbody>
+              {{#if MyTradesHistoryCount }}
+                <tfoot>
+                  <tr>
+                    <th colspan="9">
+                      <div class="ui right floated pagination menu">
+                        <a class="icon item my-orders-history-count-left">
+                          <i class="left chevron icon"></i>
+                        </a>
+                        <a class="icon item my-orders-history-count-right">
+                          <i class="right chevron icon"></i>
+                        </a>
+                      </div>
+                    </th>
+                  </tr>
+                </tfoot>
+              {{/if}}
+            </table>
+            <div class="ui checkbox trades-hide-checkbox">
+              <input type="checkbox" id="hidePairsTradesHistory">
+              <label>{{_ "Hide other trading pairs" }}</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="seven wide center aligned column OrdersBookWrapper">
+        <div class="row">
+          <div class="ui stackable centered grid">
+            <div class="eight wide center aligned column BookWrapper">
+          	  <div class="book-table-header">
+          			<div class="CellPrice">
+          			  {{_ "Price (%s)" RightSymbol }}
+                </div>
+          			<div class="CellQuantity">
+                  {{_ "Quantity (%s)" LeftSymbol }}
+                </div>
+          			<div class="CellResult">
+                  {{_ "Total (%s)" RightSymbol }}
+                </div>
+            	</div>
+          	  <div id="bookTable" class="booktable">
+            		<div id="bidRows">
+            			{{#each BookStatSell}}
+              		  <span class="bookrow">
+                			<div class="CellBidPrice CellPrice" data="{{ApproxPrice}}">
+                			  <span>
+                          <span class="price">{{PriceNumber}}</span><span class="point">.</span><span class="decimal">{{PriceDecimal}}</span>
+                        </span>
+                      </div>
+                			<div class="CellQuantity" title="{{Quantity}}" data="{{Quantity}}">
+                        {{QuantityNumber}}
+                      </div>
+                			<div class="CellResult" title="{{Result}}">
+                        {{ResultNumber}}
+                      </div>
+              		  </span>
+            		  {{/each}}
+          		  </div>
+            		<div id="bookSpread">
+            		  <span class="decimalNumber">
+            		    <select title="{{_ "Group by decimals" }}" id="decimalNumber">
+            		      {{#each val in DecimalOptions}}
+              		      <option value="{{val}}">{{val}}</option>
+              		    {{/each}}
+            		    </select>
+            		  </span> 
+            		  <span>{{LastPrice}}</span>
+            		  <span class="spread-direction {{PriceDirection}}"><i class="ui icon arrow {{PriceDirection}}"></i></span>
+            		  <span id="toCenter"><i class="ui sort icon"></i></span>
+            		</div>
+            		<div id="askRows">
+                  {{#each BookStatBuy}}
+              		  <span class="bookrow">
+                			<div class="CellAskPrice CellPrice" data="{{ApproxPrice}}">
+                			  <span>
+                          <span class="price">{{PriceNumber}}</span><span class="point">.</span><span class="decimal">{{PriceDecimal}}</span>
+                        </span>
+                      </div>
+                			<div class="CellQuantity" title="{{Quantity}}" data="{{Quantity}}">
+                        {{QuantityNumber}}
+                      </div>
+                			<div class="CellResult" title="{{Result}}">
+                        {{ResultNumber}}
+                      </div>
+              		  </span>
+            		  {{/each}}
+            		</div>
+          		</div>
+            </div>
+
+            <div class="eight wide center aligned column RecentTradesWrapper">
+              <div class="trades-table-header">
+            			<div class="CellPrice">
+            			  {{_ "Price (%s)" RightSymbol }}
+                  </div>
+            			<div class="CellQuantity">
+                    {{_ "Quantity (%s)" LeftSymbol }}
+                  </div>
+            			<div class="CellResult">
+                    {{_ "Time" }}
+                  </div>
+              </div>
+              <div class="RecentTrades">
+                <div class="tradeWrapper">
+                  {{#each RecentTrades}}
+              		  <span class="traderow">
+                      <div class="{{Direction}} CellPrice" title="{{PriceNumber}}.{{PriceDecimal}}" data="{{Price}}">
+                        {{PriceNumber}}.{{PriceDecimal}}
+                      </div>
+                			<div class="CellQuantity" title="{{Quantity}}" data="{{Quantity}}">
+                        {{QuantityNumber}}
+                      </div>
+                			<div class="CellTime" title="{{formatDate TradeTime "Do MMM YYYY HH:mm:ss"}}">
+                        {{formatDate TradeTime "HH:mm:ss"}}
+                      </div>
+              		  </span>
+          		    {{/each}}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+
+          <div class="ui stackable centered grid">
+            <div class="sixteen wide center aligned column OrderWrapper">
+
+              <div class="ui attached tabular stackable menu orderTypeTab">
+                <a class="active item" data-tab="Market">{{_ "Market" }}</a>
+                <a class="item" data-tab="Limit">{{_ "Limit" }}</a>
+                <a class="item" data-tab="StopMarket">{{_ "Stop market" }}</a>
+                <a class="item" data-tab="StopLimit">{{_ "Stop limit" }}</a>
+                <a class="item" data-tab="TrailingStopMarket">{{_ "Tr/stop market" }}</a>
+                <a class="item" data-tab="TrailingStopLimit">{{_ "Tr/stop limit" }}</a>
+                <!-- <a class="item" data-tab="BlockTrade">{{_ "Block trade" }}</a> -->
+                <span class="tutorial" data="OrderType-Market">?</span>
+              </div>
+
+              <div class="ui bottom top attached active tab" data-tab="Market">
+                <div class="ui segment">
+                  <div class="ui two column very relaxed grid stackable">
+                    <div class="column">
+                      <div class="balance-buy" data-val="{{currentBalance "Buy" false}}"><i class="suitcase icon"></i> {{currentBalance "Buy" true}}</div>
+                      <form class="ui form buy">
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="market-quantity quantity decimal" name="Quantity" placeholder="{{_ "Quantity" }}">
+                          </div>
+                        </div>
+                        <input type="hidden" name="Side" value="Buy">
+                        <input type="hidden" name="OrderType" value="Market">
+                        <button class="ui button mini green button-buy" type="submit">{{_ "Buy" }}</button>
+                      </form>
+                    </div>
+                    <div class="column">
+                      <div class="balance-sell" data-val="{{currentBalance "Sell" false}}"><i class="suitcase icon"></i> {{currentBalance "Sell" true}}</div>
+                      <form class="ui form sell">
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="market-quantity quantity decimal" name="Quantity" placeholder="{{_ "Quantity" }}">
+                          </div>
+                        </div>
+                        <input type="hidden" name="Side" value="Sell">
+                        <input type="hidden" name="OrderType" value="Market">
+                        <button class="ui button mini red button-sell" type="submit">{{_ "Sell" }}</button>
+                      </form>
+                    </div>
+                  </div>
+                  <div class="ui vertical divider">
+                    {{_ "Or"}}
+                  </div>
+                </div>
+              </div>
+
+              <div class="ui bottom top attached tab" data-tab="Limit">
+                <div class="ui segment">
+                  <div class="ui two column very relaxed grid stackable">
+                    <div class="column">
+                      <div class="balance-buy" data-val="{{currentBalance "Buy" false}}"><i class="suitcase icon"></i> {{currentBalance "Buy" true}}</div>
+                      <form class="ui form buy">
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="limit-price price decimal" name="LimitPrice" placeholder="{{_ "Price" }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="limit-quantity quantity decimal" name="Quantity" placeholder="{{_ "Quantity" }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="decimal" name="Total" placeholder="{{_ "Total" }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <select class="Limit-TimeInForce" name="TimeInForce">
+                              <option value="GTC" selected>{{_ "GTC" }}</option>
+                              <option value="IOC">{{_ "IOC" }}</option>
+                              <option value="FOK">{{_ "FOK" }}</option>
+                            </select>
+                          </div>
+                        </div>
+                        <input type="hidden" name="Side" value="Buy">
+                        <input type="hidden" name="OrderType" value="Limit">
+                        <button class="ui button mini green button-buy" type="submit">{{_ "Buy" }}</button>
+                      </form>
+                    </div>
+                    <div class="column">
+                      <div class="balance-sell" data-val="{{currentBalance "Sell" false}}"><i class="suitcase icon"></i> {{currentBalance "Sell" true}}</div>
+                      <form class="ui form sell">
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="limit-price price decimal" name="LimitPrice" placeholder="{{_ "Price" }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="limit-quantity quantity decimal" name="Quantity" placeholder="{{_ "Quantity" }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="decimal" name="Total" placeholder="{{_ "Total" }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <select class="Limit-TimeInForce" name="TimeInForce">
+                              <option value="GTC" selected>{{_ "GTC" }}</option>
+                              <option value="IOC">{{_ "IOC" }}</option>
+                              <option value="FOK">{{_ "FOK" }}</option>
+                            </select>
+                          </div>
+                        </div>
+                        <input type="hidden" name="Side" value="Sell">
+                        <input type="hidden" name="OrderType" value="Limit">
+                        <button class="ui button mini red button-sell" type="submit">{{_ "Sell" }}</button>
+                      </form>
+                    </div>
+                  </div>
+                  <div class="ui vertical divider">
+                    {{_ "Or"}}
+                  </div>
+                </div>
+              </div>
+
+              <div class="ui bottom top attached tab" data-tab="StopMarket">
+                <div class="ui segment">
+                  <div class="ui two column very relaxed grid stackable">
+                    <div class="column">
+                      <div class="balance-buy" data-val="{{currentBalance "Buy" false}}"><i class="suitcase icon"></i> {{currentBalance "Buy" true}}</div>
+                      <form class="ui form buy">
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="decimal" name="StopPrice" placeholder="{{_ "Stop price" }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="stopMarket-quantity quantity decimal" name="Quantity" placeholder="{{_ "Quantity" }}">
+                          </div>
+                        </div>
+                        <input type="hidden" name="Side" value="Buy">
+                        <input type="hidden" name="OrderType" value="StopMarket">
+                        <button class="ui button mini green button-buy" type="submit">{{_ "Buy" }}</button>
+                      </form>
+                    </div>
+                    <div class="column">
+                      <div class="balance-sell" data-val="{{currentBalance "Sell" false}}"><i class="suitcase icon"></i> {{currentBalance "Sell" true}}</div>
+                      <form class="ui form sell">
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="decimal" name="StopPrice" placeholder="{{_ "Stop price" }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="stopMarket-quantity quantity decimal" name="Quantity" placeholder="{{_ "Quantity" }}">
+                          </div>
+                        </div>
+                        <input type="hidden" name="Side" value="Sell">
+                        <input type="hidden" name="OrderType" value="StopMarket">
+                        <button class="ui button mini red button-sell" type="submit">{{_ "Sell" }}</button>
+                      </form>
+                    </div>
+                  </div>
+                  <div class="ui vertical divider">
+                    {{_ "Or"}}
+                  </div>
+                </div>
+              </div>
+
+              <div class="ui bottom top attached tab" data-tab="StopLimit">
+                <div class="ui segment">
+                  <div class="ui two column very relaxed grid stackable">
+                    <div class="column">
+                      <div class="balance-buy" data-val="{{currentBalance "Buy" false}}"><i class="suitcase icon"></i> {{currentBalance "Buy" true}}</div>
+                      <form class="ui form buy">
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="decimal" name="StopPrice" placeholder="{{_ "Stop price" }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="stopLimit-price price decimal" name="LimitPrice" placeholder="{{_ "Price" }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="stopLimit-quantity quantity decimal" name="Quantity" placeholder="{{_ "Quantity" }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="decimal" name="Total" placeholder="{{_ "Total" }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <select class="stopLimit-TimeInForce" name="TimeInForce">
+                              <option value="GTC" selected>{{_ "GTC" }}</option>
+                              <option value="IOC">{{_ "IOC" }}</option>
+                              <option value="FOK">{{_ "FOK" }}</option>
+                            </select>
+                          </div>
+                        </div>
+                        <input type="hidden" name="Side" value="Buy">
+                        <input type="hidden" name="OrderType" value="StopLimit">
+                        <button class="ui button mini green button-buy" type="submit">{{_ "Buy" }}</button>
+                      </form>
+                    </div>
+                    <div class="column">
+                      <div class="balance-sell" data-val="{{currentBalance "Sell" false}}"><i class="suitcase icon"></i> {{currentBalance "Sell" true}}</div>
+                      <form class="ui form sell">
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="decimal" name="StopPrice" placeholder="{{_ "Stop price" }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="stopLimit-price price decimal" name="LimitPrice" placeholder="{{_ "Price" }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="stopLimit-quantity quantity decimal" name="Quantity" placeholder="{{_ "Quantity" }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="decimal" name="Total" placeholder="{{_ "Total" }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <select class="stopLimit-TimeInForce" name="TimeInForce">
+                              <option value="GTC" selected>{{_ "GTC" }}</option>
+                              <option value="IOC">{{_ "IOC" }}</option>
+                              <option value="FOK">{{_ "FOK" }}</option>
+                            </select>
+                          </div>
+                        </div>
+                        <input type="hidden" name="Side" value="Sell">
+                        <input type="hidden" name="OrderType" value="StopLimit">
+                        <button class="ui button mini red button-sell" type="submit">{{_ "Sell" }}</button>
+                      </form>
+                    </div>
+                  </div>
+                  <div class="ui vertical divider">
+                    {{_ "Or"}}
+                  </div>
+                </div>
+              </div>
+
+              <div class="ui bottom top attached tab" data-tab="TrailingStopMarket">
+                <div class="ui segment">
+                  <div class="ui two column very relaxed grid stackable">
+                    <div class="column">
+                      <div class="balance-buy" data-val="{{currentBalance "Buy" false}}"><i class="suitcase icon"></i> {{currentBalance "Buy" true}}</div>
+                      <form class="ui form buy">
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="decimal" name="StopPrice" placeholder="{{_ "Stop price" }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <select class="TrailingStopMarket-PegPriceType" name="PegPriceType" placeholder="{{_ "Peg price type" }}">
+                              <option value="Last" selected>{{_ "Last" }}</option>
+                              <option value="Bid">{{_ "Bid" }}</option>
+                              <option value="Ask">{{_ "Ask" }}</option>
+                              <option value="Midpoint">{{_ "Midpoint" }}</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="decimal" name="TrailingAmount" placeholder="{{_ "Trailing amount" }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="TrailingStopMarket-quantity quantity decimal" name="Quantity" placeholder="{{_ "Quantity" }}">
+                          </div>
+                        </div>
+                        <input type="hidden" name="Side" value="Buy">
+                        <input type="hidden" name="OrderType" value="TrailingStopMarket">
+                        <button class="ui button mini green button-buy" type="submit">{{_ "Buy" }}</button>
+                      </form>
+                    </div>
+                    <div class="column">
+                      <div class="balance-sell" data-val="{{currentBalance "Sell" false}}"><i class="suitcase icon"></i> {{currentBalance "Sell" true}}</div>
+                      <form class="ui form sell">
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="decimal" name="StopPrice" placeholder="{{_ "Stop price" }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <select class="TrailingStopMarket-PegPriceType" name="PegPriceType" placeholder="{{_ "Peg price type" }}">
+                              <option value="Last" selected>{{_ "Last" }}</option>
+                              <option value="Bid">{{_ "Bid" }}</option>
+                              <option value="Ask">{{_ "Ask" }}</option>
+                              <option value="Midpoint">{{_ "Midpoint" }}</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="decimal" name="TrailingAmount" placeholder="{{_ "Trailing amount" }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="TrailingStopMarket-quantity quantity decimal" name="Quantity" placeholder="{{_ "Quantity" }}">
+                          </div>
+                        </div>
+                        <input type="hidden" name="Side" value="Sell">
+                        <input type="hidden" name="OrderType" value="TrailingStopMarket">
+                        <button class="ui button mini red button-sell" type="submit">{{_ "Sell" }}</button>
+                      </form>
+                    </div>
+                  </div>
+                  <div class="ui vertical divider">
+                    {{_ "Or"}}
+                  </div>
+                </div>
+              </div>
+
+              <div class="ui bottom top attached tab" data-tab="TrailingStopLimit">
+                <div class="ui segment">
+                  <div class="ui two column very relaxed grid stackable">
+                    <div class="column">
+                      <div class="balance-buy" data-val="{{currentBalance "Buy" false}}"><i class="suitcase icon"></i> {{currentBalance "Buy" true}}</div>
+                      <form class="ui form buy">
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="decimal" name="StopPrice" placeholder="{{_ "Stop price" }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <select class="TrailingStopMarket-PegPriceType" name="PegPriceType" placeholder="{{_ "Peg price type" }}">
+                              <option value="Last" selected>{{_ "Last" }}</option>
+                              <option value="Bid">{{_ "Bid" }}</option>
+                              <option value="Ask">{{_ "Ask" }}</option>
+                              <option value="Midpoint">{{_ "Midpoint" }}</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="decimal" name="LimitOffset" placeholder="{{_ "Limit offset" }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="TrailingStopLimit-quantity quantity decimal" name="Quantity" placeholder="{{_ "Quantity" }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="decimal" name="Total" placeholder="{{_ "Total" }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <select class="TrailingStopLimit-TimeInForce" name="TimeInForce">
+                              <option value="GTC" selected>{{_ "GTC" }}</option>
+                              <option value="IOC">{{_ "IOC" }}</option>
+                              <option value="FOK">{{_ "FOK" }}</option>
+                            </select>
+                          </div>
+                        </div>
+                        <input type="hidden" name="Side" value="Buy">
+                        <input type="hidden" name="OrderType" value="TrailingStopLimit">
+                        <button class="ui button mini green button-buy" type="submit">{{_ "Buy" }}</button>
+                      </form>
+                    </div>
+                    <div class="column">
+                      <div class="balance-sell" data-val="{{currentBalance "Sell" false}}"><i class="suitcase icon"></i> {{currentBalance "Sell" true}}</div>
+                      <form class="ui form sell">
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="decimal" name="StopPrice" placeholder="{{_ "Stop price" }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <select class="TrailingStopMarket-PegPriceType" name="PegPriceType" placeholder="{{_ "Peg price type" }}">
+                              <option value="Last" selected>{{_ "Last" }}</option>
+                              <option value="Bid">{{_ "Bid" }}</option>
+                              <option value="Ask">{{_ "Ask" }}</option>
+                              <option value="Midpoint">{{_ "Midpoint" }}</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="decimal" name="LimitOffset" placeholder="{{_ "Limit offset" }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="TrailingStopLimit-quantity quantity decimal" name="Quantity" placeholder="{{_ "Quantity" }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="decimal" name="Total" placeholder="{{_ "Total" }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <select class="TrailingStopLimit-TimeInForce" name="TimeInForce">
+                              <option value="GTC" selected>{{_ "GTC" }}</option>
+                              <option value="IOC">{{_ "IOC" }}</option>
+                              <option value="FOK">{{_ "FOK" }}</option>
+                            </select>
+                          </div>
+                        </div>
+                        <input type="hidden" name="Side" value="Sell">
+                        <input type="hidden" name="OrderType" value="TrailingStopLimit">
+                        <button class="ui button mini red button-sell" type="submit">{{_ "Sell" }}</button>
+                      </form>
+                    </div>
+                  </div>
+                  <div class="ui vertical divider">
+                    {{_ "Or"}}
+                  </div>
+                </div>
+              </div>
+
+<!-- 
+              <div class="ui bottom top attached tab" data-tab="BlockTrade">
+                <div class="ui segment">
+                  <div class="ui two column very relaxed grid stackable">
+                    <div class="column">
+                      <div class="balance-buy" data-val="{{currentBalance "Buy" false}}"><i class="suitcase icon"></i> {{currentBalance "Buy" true}}</div>
+                      <form class="ui form buy">
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="BlockTrade-price price decimal" name="Price" placeholder="{{_ "Price" }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="BlockTrade-quantity quantity decimal" name="Quantity" placeholder="{{_ "Quantity" }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="decimal" name="Chunk" placeholder="{{_ "Chunk" }}">
+                          </div>
+                        </div>
+                        <button class="ui button mini green button-buy" type="submit">{{_ "Buy" }}</button>
+                      </form>
+                    </div>
+                    <div class="column">
+                      <div class="balance-sell" data-val="{{currentBalance "Sell" false}}"><i class="suitcase icon"></i> {{currentBalance "Sell" true}}</div>
+                      <form class="ui form sell">
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="BlockTrade-price price decimal" name="Price" placeholder="{{_ "Price" }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="BlockTrade-quantity quantity decimal" name="Quantity" placeholder="{{_ "Quantity" }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="ui small input">
+                            <input type="text" class="decimal" name="Chunk" placeholder="{{_ "Chunk" }}">
+                          </div>
+                        </div>
+                        <button class="ui button mini red button-sell" type="submit">{{_ "Sell" }}</button>
+                      </form>
+                    </div>
+                  </div>
+                  <div class="ui vertical divider">
+                    {{_ "Or"}}
+                  </div>
+                </div>
+              </div>
+-->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</template>

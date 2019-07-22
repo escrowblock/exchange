@@ -1,0 +1,42 @@
+<template name="ListTalks">
+  <div class="ui feed">
+    {{#if list}}
+      {{#each listTalks}}
+        {{> ListTalksItem talk=getTalkInfo}}
+      {{/each}}
+    {{else}}
+      <span> {{_ "Haven't any talks yet"}} </span>
+    {{/if}}
+  </div>
+</template>
+
+<template name="ListTalksItem">
+  <div class="event">
+    <div class="label">
+      <span class="identicon" style="background-image: url('{{identiconData talk.Ethaddress}}')"></span> {{UserName}}
+      {{#if online }}
+        <div title="{{_ "Online"}}" class="talk-online"></div>
+        {{else}}
+        <div title="{{_ "Offline"}}" class="talk-offline"></div>
+      {{/if}}
+    </div>
+    <div class="content">
+      <div class="summary">
+        <span class="user">
+          {{_ "The talk with %s" talk.UserName }}
+        </span> 
+        <div class="date">
+          {{_ "The last message at" }} {{{formatDate talk.CreatedAt}}}
+        </div>
+      </div>
+      <div class="extra text">
+        {{ talk.Message }}
+      </div>
+      <div class="meta">
+        <a href="{{pathFor 'Talk' _id=talk.TalkId}}" class="message">
+          <i class="message icon"></i> {{_ "See all messages" }}
+        </a>
+      </div>
+    </div>
+  </div>
+</template>

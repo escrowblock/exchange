@@ -1,0 +1,11 @@
+import './AdminHeader.html';
+import './AdminSidebar.html';
+import './AdminTemplates.html';
+import './AdminWidgets.html';
+import './afArrayField_nothing.html';
+import './style.scss';
+import './autoForm.js';
+import './events.js';
+import './helpers.js';
+import './slim_scroll.js';
+import './templates.js';

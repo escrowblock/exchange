@@ -1,0 +1,20 @@
+#uploadFile {
+    #progress {
+        position: absolute;
+        top: 70px;
+        width: 100%;
+        padding: 10px;
+        text-align: left;
+        font-size: 0.75em;
+        line-height: 1.2em;
+    }
+    .progress {
+        display: block;
+        width: auto;
+        span {
+            display: block;
+            background-color: #ccc;
+            padding-left: 10px;
+        }
+    }
+}

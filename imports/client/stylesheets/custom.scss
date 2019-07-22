@@ -1,0 +1,481 @@
+@import "variables/colors";
+@import "variables/fonts";
+
+
+/*--------------------
+      Placeholder
+---------------------*/
+
+/* browsers require these rules separate */
+.ui.form ::-webkit-input-placeholder {
+  color: rgba(0, 0, 0, 0.75);
+}
+.ui.form :-ms-input-placeholder {
+  color: rgba(0, 0, 0, 0.75);
+}
+.ui.form ::-moz-placeholder {
+  color: rgba(0, 0, 0, 0.75);
+}
+.ui.form :focus::-webkit-input-placeholder {
+  color: rgba(0, 0, 0, 0.75);
+}
+.ui.form :focus:-ms-input-placeholder {
+  color: rgba(0, 0, 0, 0.75);
+}
+.ui.form :focus::-moz-placeholder {
+  color: rgba(0, 0, 0, 0.75);
+}
+
+/**
+ * Common
+ **/
+
+body {
+  font-size: 12px;
+}
+
+body.pushable>.pusher {
+  min-height: 100%;
+}
+
+body.pushable {
+  background-color: transparent;
+}
+
+.tooltip-help.left {
+  display: flex;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: grey;
+  border-radius: 10px;
+  width: 20px;
+  color: white;
+  font-weight: bold;
+  padding-left: 7px;
+}
+
+.infoblock {
+  display: inherit;
+}
+
+.ui.menu .item.custom:before {
+  background: transparent;
+}
+
+.ui.right.item.custom {
+  padding: 0px;
+}
+
+.spinner-container {
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  position: fixed;
+  z-index: 9999;
+  
+  & > img {
+    width: 100px;
+    height: 75px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.main-center.container {
+  position: relative;
+  width: 700px !important;
+  left: 0px;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.presentation {
+  color: white;
+  padding: 1rem;
+}
+
+.alert-danger {
+  background-color: $red;
+  color: #fff;
+  a {
+    color: #fff;
+    text-decoration: underline;
+  }
+}
+
+#alert_placeholder {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  z-index: 9999;
+  width: 240px;
+}
+
+.offscreen {
+	display: block;
+	position: absolute;
+	top: -10000px;
+	left: -10000px;
+}
+
+.ui.basic.red.label {
+  position: absolute;
+  top: 2.5em;
+}
+
+/**
+ * Overlay with sharing
+ **/
+
+.ui.large.menu {
+  box-shadow: none;
+  margin: 0px;
+  h1.ui.header {
+    margin: auto;
+    margin-left: 0.5em;
+  }
+}
+
+.ui.secondary.pointing.menu .item {
+  font-size: 1rem;
+  padding: 7px;
+  padding-left: 3px;
+  padding-right: 3px;
+  .icon {
+    padding-left: 5px;
+  }
+  .label {
+    padding: 3px;
+  }
+}
+ 
+.ui.large.secondary.pointing.menu.main {
+  .short-menu {
+    max-width: 100px;
+    padding-right: 0px;
+    padding-left: 0px;
+    a.menu-item {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .ui.label {
+      margin-left: 3px;
+    }
+  }
+  .last-price {
+    max-width: 75px;
+    .label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+}
+
+.secondary.pointing.menu .toc.item {
+  display: none;
+}
+
+.ui.grid .column.toc-wrapper {
+  padding: 0px;
+}
+
+.ui.grid.toc-grid-wrapper {
+  height: 100%;
+  margin-top: 0px;
+}
+
+.toc {
+  height: 100%;
+  .ui.sticky.menu {
+    height: 100%;
+  }
+}
+
+.ui.top.attached.menu {
+  .left.item:first-child {
+    margin-right: 0px !important;
+  }
+  h3.ui.header {
+    margin-left: 1em;
+    margin-top: 1.75em;
+    &:before {
+      width: 0px;
+    }
+    &.account {
+      margin-top: 1em;
+    }
+  }
+}
+
+.ui.menu {
+  .logo {
+    width: 35px;
+    img {
+      max-width: 100%;
+      max-height: 100%;
+    }
+  }
+}
+/**
+ * Dark theme
+ **/
+body.dark {
+  filter: invert(100) hue-rotate(180deg);
+  i.flag {
+    filter: invert(100) hue-rotate(180deg);
+  }
+}
+
+/**
+ * NotFound/NotFound
+ **/
+.ui.notFound {
+  height: 100%;
+}
+
+.notFoundCordova {
+    color: #ffffff;
+    margin: 0px;
+    text-align: center;
+
+    img {
+        position: absolute;
+        bottom: 0;
+        left: -200px;
+        @media screen and (max-width: 767px) {
+          position: relative;
+          left: 0px;
+          height: 200px;
+        }
+    }
+    h1 {
+        font: bold 78px $bold;
+        transform: translateY(-60px);
+        white-space: nowrap;
+        @media screen and (max-width: 767px) {
+          transform: translateY(-10px);
+          font-size: 19px;
+          padding: 30px;
+        }
+    }
+    h2 {
+        font: 20px/1 $regular;
+        transform: translateY(-60px);
+        white-space: nowrap;
+        @media screen and (max-width: 767px) {
+          transform: translateY(-10px);
+          white-space: normal;
+          font-size: 13px;
+        }
+    }
+}
+
+.short_text {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  width: 10rem;
+  display: block;
+}
+
+#ineedhelp {
+  cursor: pointer;
+}
+
+.image-center {
+  img {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+h2.ui.header {
+  text-align: center;
+}
+
+.header-logo {
+  img {
+    margin-top: 0px;
+    margin-left: 10px;
+    width: 45px !important;
+    margin-right: 25px !important;
+  }
+}
+
+.alert-bottom {
+  text-align: center;
+  vertical-align: baseline;
+  width: 100%;
+  bottom: 0;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-radius: 0px;
+  background: #a333c8;
+  font-weight: bold;
+  color: #fff;
+  opacity: 0.5;
+  height: 50px;
+  font-size: 0.7em;
+  overflow: hidden;
+}
+
+#iron-router-progress {
+  background-color: #a333c8;
+  &.spinner::before {
+    border-color: #a333c8;
+  }
+}
+
+#connection-lost-banner {
+  padding: 15px;
+}
+
+.ui.attached.segment.clear-both {
+  margin-top: 1em;
+  &:after {
+    content: '';
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+  }
+}
+
+.ui.menu:not(.vertical) .item>.button.mini {
+  font-size: .78571429rem;
+}
+
+.ui.form input:not([type]),
+.ui.form input[type=date],
+.ui.form input[type=datetime-local],
+.ui.form input[type=email],
+.ui.form input[type=file],
+.ui.form input[type=number],
+.ui.form input[type=password],
+.ui.form input[type=search],
+.ui.form input[type=tel],
+.ui.form input[type=text],
+.ui.form input[type=time],
+.ui.form input[type=url],
+.ui.form select,
+.ui.form textarea {
+  padding: .37857143em 0.5em;
+}
+
+.tutorial {
+  background: #fff4f4;
+  color: #080808;
+  border-radius: 50%;
+  width: 20px;
+  padding: 0.45em;
+  height: 20px;
+  margin-left: 5px;
+  font-size: 1em;
+  font-weight: bold;
+  vertical-align: middle;
+  display: flex;
+  line-height: 0.45em;
+  margin-top: 5px;
+  cursor: pointer;
+}
+
+.ui.mini.selection.dropdown {
+  font-size: .78571429rem;
+  min-width: 4em;
+  padding-left: .38571429em !important;
+  padding-right: 1.8em;
+  
+  .menu > .item {
+    padding-left: .38571429em !important;
+    font-size: .78571429rem;
+    padding-top: 1em !important;
+  }
+}
+
+.main-wrapper {
+  min-height: 600px;
+}
+
+.loading-charts {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+}
+
+.jspDrag {
+  background: #bbbbbb;
+  border-radius: 3px;
+  width: 7px;
+  left: 0;
+  min-height: 35px;
+}
+
+.jspArrow {
+  border-radius: 3px;
+}
+
+.jspTrack {
+  width: 2px;
+  background-color: transparent;
+}
+
+.jspVerticalBar {
+  width: 7px;
+  background: transparent;
+}
+
+.jspPane {
+  width: 100% !important;
+}
+
+.identicon {
+  width: 100%;
+  height: auto;
+  border-radius: 500rem; 
+  height: 25px;
+  width: 25px;
+  display: block;
+  background-size: contain;
+  background-position: center;
+  padding-left: 3px;
+  padding-right: 3px;
+  &.arbitrage {
+    box-shadow: black 3px 3px 3px;
+    border: 2px dashed red;
+  }
+}
+
+.icon.star {
+  cursor: pointer;
+  &.active {
+    color: #a333c8;
+  }
+}
+
+.ui.checkbox {
+  margin-left: 2.5em;
+  label {
+    padding-left: 1.5em;
+  }
+}
+
+.with-description {
+  .field {
+    margin-bottom: 0.25em;
+  }
+  .description {
+    font-size: 0.85em;
+    color: #666666;
+  }
+}
+
+.ui.form {
+  .ui.pointing.red.label {
+    z-index: 9999;
+  }
+}

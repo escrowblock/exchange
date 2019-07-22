@@ -1,0 +1,49 @@
+<template name="AppNavigation">
+  <span class="logo"> <a  href="{{ pathFor 'Home' }}"><img src="/favicon.png"></a></span>
+  <span class="item short-menu {{active 'Trade'}}">
+    <i class="chart line icon"></i>
+    <a class="menu-item" title="{{_ "My account" }}" href="{{ pathFor 'Trade' }}">
+      {{_ "Trade" }}
+    </a>
+  </span>
+  <div class="ui dropdown item short-menu">
+    <i class="payment icon"></i>
+    <a class="menu-item" title="{{_ "Balances" }}" href="{{ pathFor 'Balances' }}">
+      {{_ "Balances" }}
+    </a>
+    <div class="menu">
+      <span class="item {{active 'Transactions'}}">
+        <i class="random icon"></i>
+        <a class="menu-item" title="{{_ "Transactions" }}" href="{{ pathFor 'Transactions' }}">
+          {{_ "Transactions" }}
+        </a>
+      </span>
+    </div>
+  </div>
+  <span class="item short-menu {{active 'ProfileForm'}}">
+    <i class="user layout icon"></i>
+    <a class="menu-item" title="{{_ "Profile" }}" href="{{ pathFor 'Profile' }}">
+      {{_ "Profile" }}
+    </a>
+  </span>
+  <span class="item short-menu {{active 'News'}}">
+    <i class="newspaper icon"></i>
+    <a class="menu-item" title="{{_ "News" }}" href="{{ pathFor 'News' }}">
+      {{_ "News" }}
+    </a>
+  </span>
+  <span class="item short-menu {{active 'Talks'}}">
+    <i class="envelope icon"></i>
+    <a class="menu-item" title="{{_ "Talks" }}" href="{{ pathFor 'Talks' }}">
+      {{_ "Talks" }}
+    </a>
+    <div class="ui label" title="{{_ "Total / Unread"}}">{{getCount 'TalkBadgeTotal'}}/{{getCount 'TalkBadge'}}</div>
+  </span>
+  <span class="item short-menu {{active 'Notifications'}}">
+    <i class="alarm icon"></i>
+    <a class="menu-item" title="{{_ "Notifications" }}" href="{{ pathFor 'Notifications' }}">
+      {{_ "Notifications" }}
+    </a>
+    <div class="ui label">{{getCount 'NotificationBadge'}}</div>
+  </span>
+</template>

@@ -1,0 +1,6 @@
+.deployx/
+.meteor/
+.private/
+node_modules/
+/private/vault
+package.json

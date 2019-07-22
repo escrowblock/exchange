@@ -1,0 +1,52 @@
+<template name="modalAlert">
+  <div class="ui basic modal modalAlert">
+    <div class="ui icon header modalAlert-title">
+    </div>
+    <div class="content modalAlert-content">
+    </div>
+    <div class="actions">
+      <div class="ui green ok inverted button">
+        <i class="checkmark icon"></i>
+        {{_ "Ok" }}
+      </div>
+    </div>
+  </div>
+</template>
+
+<template name="modalConfirmation">
+  <div class="ui basic modal modalConfirmation">
+    <div class="ui icon header modalConfirmation-title">
+    </div>
+    <div class="content modalConfirmation-content">
+    </div>
+    <div class="actions">
+      <div class="ui red basic cancel inverted button">
+        <i class="remove icon"></i>
+        {{_ "No" }}
+      </div>
+      <div class="ui green ok inverted button">
+        <i class="checkmark icon"></i>
+        {{_ "Yes" }}
+      </div>
+    </div>
+  </div>
+</template>
+
+<template name="modalOTP">
+  <div class="ui basic modal modalOTP">
+    <div class="ui icon header modalOTP-title">
+      {{_ "OTP Code" }}
+    </div>
+    <div class="content modalOTP-content">
+      <div class="ui fluid action input">
+        <input type="number" id="OTPCode" placeholder="{{_ "code from 6 chars" }}">
+      </div>
+    </div>
+    <div class="actions">
+      <div class="ui green ok inverted button">
+        <i class="checkmark icon"></i>
+        {{_ "Check" }}
+      </div>
+    </div>
+  </div>
+</template>

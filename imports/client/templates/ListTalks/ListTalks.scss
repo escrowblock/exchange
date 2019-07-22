@@ -1,0 +1,25 @@
+.Talks {
+    .talk-online {
+        background: #21ba45;
+        height: 7px;
+        width: 7px;
+        position: relative;
+        top: -25px;
+        right: -25px;
+        border-radius: 50%;
+    }
+    
+    .talk-offline {
+        background: #db2828;
+        height: 7px;
+        width: 7px;
+        position: relative;
+        top: -25px;
+        right: -25px;
+        border-radius: 50%;
+    }
+    
+    .ui.feed > .event > .content .extra.text {
+        max-width: 100%;
+    }
+}

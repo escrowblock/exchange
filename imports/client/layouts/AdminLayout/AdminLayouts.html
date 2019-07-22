@@ -1,0 +1,98 @@
+<template name="AdminLayout">
+  {{#if AdminConfig}}
+  {{#if isInRole 'admin'}}
+  <span class="connectionBanner">{{> connectionBanner }}</span>
+  <div class="admin-layout">
+    {{# AdminLTE skin=admin_skin }}
+      {{> AdminHeader }}
+      {{> AdminSidebar }}
+      <div class="content-wrapper" style="min-height: {{minHeight}}">
+        <section class="content-header">
+          <h1>
+            {{$.Session.get 'admin_title'}}
+            <small>{{$.Session.get 'admin_subtitle'}}</small>
+          </h1>
+          <div class="ui horizontal bulleted list">
+            <a class="item" href="{{pathFor 'adminDashboard'}}">Dashboard</a>
+            {{#if $.Session.get 'admin_collection_name'}}
+              <a class="item" href="{{pathFor 'adminDashboard'}}/{{$.Session.get 'admin_collection_name'}}/">
+                {{adminCollectionLabel admin_collection_name}}
+              </a>
+            {{/if}}
+
+            {{#if $.Session.equals 'admin_collection_page' 'new'}}
+              <a class="item">New</a>
+            {{/if}}
+
+            {{#if $.Session.equals 'admin_collection_page' 'edit'}}
+              <a class="item">Edit</a>
+            {{/if}}
+          </div>
+        </section>
+        <section class="content">
+          {{> yield }}
+        </section>
+      </div>
+    {{/ AdminLTE }}
+  </div>
+  {{> AdminDeleteModal }}
+  {{else}}
+    {{> NotAdmin}}
+  {{/if}}
+  {{else}}
+    {{> NoConfig}}
+  {{/if}}
+</template>
+
+<template name="AdminDeleteModal">
+  <div class="ui modal" id="admin-delete-modal">
+    <div class="header">
+      <h4>Confirm delete</h4>
+    </div>
+    <div class="content">
+      <p>Are you sure you want to delete this?</p>
+    </div>
+    <div class="actions">
+      <div class="ui button tiny approve red">Delete</div>
+      <div class="ui button tiny cancel grey">Close</div>
+    </div>
+  </div>
+</template>
+
+<template name="NotAdmin">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4 col-md-offset-4">
+        <p class="alert alert-info" style="margin-top:100px;">
+          You need to be an admin to view this page
+        </p>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template name="NoConfig">
+  <p class="alert alert-info">
+    You need to define an AdminConfig object to use the admin dashboard.
+    <br/>
+      A basic config to manage the 'Posts' and 'Comments' collection would look like this:
+    <br/>
+    <code>
+      AdminConfig = {
+        <br/>
+        adminEmails: ['	ben@code2create.com'],
+        <br/>
+        collections:
+        <br/>
+        {
+          <br/>
+          Posts: {},
+          <br/>
+          Comments: {}
+          <br/>
+        }
+        <br/>
+      }
+    </code>
+  </p>
+</template>

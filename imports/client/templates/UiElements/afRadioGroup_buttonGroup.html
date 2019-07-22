@@ -1,0 +1,10 @@
+<template name="afRadioGroup_buttonGroup">
+  <div class="af-radio-group" {{dsk}}>
+    {{#each this.items}}
+      <label>
+        <input type="radio" value="{{this.value}}" {{atts}} /> {{this.label}}
+        <div class="container-radio"><div class="inner"></div></div>
+      </label>
+    {{/each}}
+  </div>
+</template>

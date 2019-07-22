@@ -1,0 +1,25 @@
+# Third party
+packages/
+
+# Third party libraries
+client/lib/
+imports/client/templates/Admin/slim_scroll.js
+imports/client/lib/
+
+# Private directory
+private/
+
+# Public directory
+public/
+
+# Deployment settings
+.deployx/
+
+# Meteor files
+.meteor/
+
+# git files
+.git/
+
+# IPFS files
+.private/

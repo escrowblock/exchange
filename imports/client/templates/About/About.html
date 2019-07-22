@@ -1,0 +1,14 @@
+<template name="About">
+  <p>{{{formatBodyAbout}}}</p>
+  <div class="ui accordion">
+    {{#each faqlist}}
+      <div class="title">
+        <i class="dropdown icon"></i>
+        <span>{{title}}</span>
+      </div>
+      <div class="content">
+        <p class="transition"> {{{formatBody}}} </p>
+      </div>
+    {{/each}}
+  </div>
+</template>

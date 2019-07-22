@@ -1,0 +1,30 @@
+.admin-layout {
+  height: 100%;
+}
+
+.pagination {
+  li {
+    display: inline;
+    width: auto;
+    padding: 5px;
+  }
+}
+
+.sidebar-menu>li>.treeview-menu {
+   padding-left: 1.5em;
+}
+
+.ui.modal {
+  position: absolute;
+  left: 20%;
+  top: 30%;
+  .content {
+    height: auto;
+    min-height: auto;
+  }
+}
+
+.admin-layout .dataTables_wrapper table.dataTable > tbody > tr > td {
+  padding-left: 1em;
+  padding-right: 1em;
+}

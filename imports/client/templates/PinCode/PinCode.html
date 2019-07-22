@@ -1,0 +1,25 @@
+<template name="PinCode">
+  <div class="ui raised very padded container">
+    <div class="ui stackable centered grid">
+      <div class="column">
+        <div class="row">
+          <h2 class="ui header">
+            {{_ "Paste your pin code here" }}
+          </h2>
+        </div>
+      </div>
+    </div>
+    
+    <div class="ui basic segment">
+      <div class="ui action fluid input">
+        <input type="text" placeholder="{{_ "Code from email" }}" id="pinCode">
+        <button id="sendPinCode" class="ui button">{{_ "Send" }}</button>
+      </div>
+      <div class="ui divider hidden"></div>
+      <div class="ui ignored red message">
+        <i class="icon info"></i>
+        {{_ "We detected a different IP address. Please enter the pin code sent to the email address that you specified in your profile."}}
+      </div>
+    </div>
+  </div>
+</template>
