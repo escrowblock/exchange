@@ -24,7 +24,7 @@
   "All changes are saved": "保存所有更改",
   "All": "所有",
   "Ask": "问",
-  "DEPOSIT_TIME": "资产将在30次网络确认后立即存入。存款后，您可以在<a href='%s'>交易页面</a>上跟踪其进度",
+  "DEPOSIT_TIME": "资产将在%s次网络确认后立即存入。存款后，您可以在<a href='%s'>交易页面</a>上跟踪其进度",
   "Average price": "平均价格",
   "Balance": "平衡",
   "Balances": "余额",
@@ -302,5 +302,6 @@
   "Your request on withdraw operation is accepted.": "您接受撤销操作的请求。",
   "Your trusted address for %s is epmty. Click on deposit to fill it.": "您%s的可信地址为空。点击存款填写。",
   "code from 6 chars": "来自6个字符的代码",
-  "when": "什么时候"
+  "when": "什么时候",
+  "Decryption process": "解密过程"
 }

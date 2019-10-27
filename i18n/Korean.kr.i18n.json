@@ -24,7 +24,7 @@
   "All changes are saved": "모든 변경 사항이 저장됩니다.",
   "All": "모든",
   "Ask": "청하다",
-  "DEPOSIT_TIME": "자산은 네트워크 확인 후 즉시 입금됩니다. 입금 후 <a href='%s'> 거래 페이지 </a>에서 진행 상황을 추적 할 수 있습니다.",
+  "DEPOSIT_TIME": "% s 네트워크 확인 후 즉시 자산이 예치됩니다. 입금 후 <a href='%s'> 거래 페이지 </a>에서 진행 상황을 추적 할 수 있습니다.",
   "Average price": "평균 가격",
   "Balance": "균형",
   "Balances": "저울",
@@ -302,5 +302,6 @@
   "Your request on withdraw operation is accepted.": "인출 작업에 대한 귀하의 요청이 수락됩니다.",
   "Your trusted address for %s is epmty. Click on deposit to fill it.": "%s의 신뢰할 수있는 주소가 비어 있습니다. 그것을 채우기 위해 보증금을 클릭하십시오.",
   "code from 6 chars": "6 자의 코드",
-  "when": "언제"
+  "when": "언제",
+  "Decryption process": "해독 과정"
 }

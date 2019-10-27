@@ -24,7 +24,7 @@
   "All changes are saved": "Todos los cambios son guardados.",
   "All": "Todos",
   "Ask": "Pedir",
-  "DEPOSIT_TIME": "El activo se depositará inmediatamente después de 30 confirmaciones de la red. Después de realizar un depósito, puede hacer un seguimiento de su progreso en la <a href='%s'> página de transacciones </a>",
+  "DEPOSIT_TIME": "El activo se depositará inmediatamente después de %s confirmaciones de la red. Después de realizar un depósito, puede hacer un seguimiento de su progreso en la <a href='%s'> página de transacciones </a>",
   "Average price": "Precio promedio",
   "Balance": "Equilibrar",
   "Balances": "Saldos",
@@ -303,5 +303,6 @@
   "Your request on withdraw operation is accepted.": "Se acepta su solicitud de operación de retirada.",
   "Your trusted address for %s is epmty. Click on deposit to fill it.": "Su dirección de confianza para %s está vacía. Haga clic en depósito para llenarlo.",
   "code from 6 chars": "código de 6 caracteres",
-  "when": "cuando"
+  "when": "cuando",
+  "Decryption process": "Proceso de descifrado"
 }

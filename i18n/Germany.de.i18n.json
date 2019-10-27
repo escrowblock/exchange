@@ -24,7 +24,7 @@
   "All changes are saved": "Alle Änderungen werden gespeichert",
   "All": "Alles",
   "Ask": "Fragen",
-  "DEPOSIT_TIME": "Das Guthaben wird sofort nach 30 Netzwerkbestätigungen hinterlegt. Nach der Einzahlung können Sie den Fortschritt auf der <a href='%s'> Transaktionsseite </a> verfolgen",
+  "DEPOSIT_TIME": "Das Guthaben wird sofort nach %s Netzwerkbestätigungen hinterlegt. Nach der Einzahlung können Sie den Fortschritt auf der <a href='%s'> Transaktionsseite </a> verfolgen",
   "Average price": "Durchschnittlicher Preis",
   "Balance": "Balance",
   "Balances": "Guthaben",
@@ -302,5 +302,6 @@
   "Your request on withdraw operation is accepted.": "Ihr Antrag auf Rücknahme wird angenommen.",
   "Your trusted address for %s is epmty. Click on deposit to fill it.": "Ihre vertrauenswürdige Adresse für %s ist leer. Klicken Sie auf Einzahlung, um es zu füllen.",
   "code from 6 chars": "Code aus 6 Zeichen",
-  "when": "wann"
+  "when": "wann",
+  "Decryption process": "Entschlüsselungsprozess"
 }

@@ -24,7 +24,7 @@
   "All changes are saved": "All changes are saved",
   "All": "All",
   "Ask": "Ask",
-  "DEPOSIT_TIME": "Asset will be deposited immediately after 30 network confirmations. After making a deposit, you can track its progress on the <a href='%s'>transaction page</a>",
+  "DEPOSIT_TIME": "Asset will be deposited immediately after %s network confirmations. After making a deposit, you can track its progress on the <a href='%s'>transaction page</a>",
   "Average price": "Average price",
   "Balance": "Balance",
   "Balances": "Balances",
@@ -302,5 +302,6 @@
   "Your request on withdraw operation is accepted.": "Your request on withdraw operation is accepted.",
   "Your trusted address for %s is epmty. Click on deposit to fill it.": "Your trusted address for %s is epmty. Click on deposit to fill it.",
   "code from 6 chars": "code from 6 chars",
-  "when": "when"
+  "when": "when",
+  "Decryption process": "Decryption process"
 }
