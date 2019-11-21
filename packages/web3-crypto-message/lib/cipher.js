@@ -1,24 +1,16 @@
-import {
-    compress,
-    decompress,
-} from './public-key';
-
 export function stringify(cipher) {
     if (typeof cipher === 'string') return cipher;
 
-    // use compressed key because it's smaller
-    const compressedKey = compress(cipher.ephemPublicKey);
-
     const ret = Buffer.concat([
-        Buffer.from(cipher.iv, 'hex'), // 16bit
-        Buffer.from(compressedKey, 'hex'), // 33bit
-        Buffer.from(cipher.mac, 'hex'), // 32bit
-        Buffer.from(cipher.ciphertext, 'hex'), // var bit
+        Buffer.from(cipher.version), // 24bit
+        Buffer.from(cipher.nonce, 'base64'), // 32bit
+        Buffer.from(cipher.ephemPublicKey, 'base64'), // 44bit
+        Buffer.from(cipher.ciphertext, 'base64'), // var bit
     ]);
 
     return ret.toString('hex');
 }
-
+  
 export function parse(str) {
     if (typeof str !== 'string') {
         return str;
@@ -27,14 +19,11 @@ export function parse(str) {
     const buf = Buffer.from(str, 'hex');
 
     const ret = {
-        iv: buf.toString('hex', 0, 16),
-        ephemPublicKey: buf.toString('hex', 16, 49),
-        mac: buf.toString('hex', 49, 81),
-        ciphertext: buf.toString('hex', 81, buf.length),
+        version: buf.toString('utf8', 0, 24),
+        nonce: buf.toString('base64', 24, 48),
+        ephemPublicKey: buf.toString('base64', 48, 80),
+        ciphertext: buf.toString('base64', 80, buf.length),
     };
-
-    // decompress publicKey
-    ret.ephemPublicKey = `04${decompress(ret.ephemPublicKey)}`;
 
     return ret;
 }

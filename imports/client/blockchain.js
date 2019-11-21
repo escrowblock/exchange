@@ -1,4 +1,5 @@
 import { Meteor } from 'meteor/meteor';
+import { decryptMessage } from '/imports/cryptoTalkTools';
 import { Buffer } from 'buffer';
 import { Session } from 'meteor/session';
 import { _ } from 'meteor/underscore';
@@ -9,10 +10,11 @@ import ProviderEngine from 'web3-provider-engine';
 import RpcSubprovider from 'web3-provider-engine/subproviders/rpc';
 import HookedWalletSubprovider from 'web3-provider-engine/subproviders/hooked-wallet';
 import { $ } from 'meteor/jquery';
-// import TrezorProvider from '@daonomic/trezor-wallet-provider';
-// import createLedgerSubprovider from '@ledgerhq/web3-subprovider';
-// import TransportU2F from '@ledgerhq/hw-transport-u2f';
-                
+import { TAPi18n } from 'meteor/tap:i18n';
+import { modalConfirmation, modalAlert } from '/imports/modal';
+import sigUtil from 'eth-sig-util';
+import { Router } from 'meteor/iron:router';
+
 const concatSig = function(vArg, rArg, sArg) {
     let r = ethUtil.fromSigned(rArg);
     let s = ethUtil.fromSigned(sArg);
@@ -27,7 +29,12 @@ export function generateWeb3WalletEngineProvider(personal_wallet, callback = () 
     window.web3Engine = new ProviderEngine();
     
     window.web3Engine.addProvider(new HookedWalletSubprovider({
-        // approveTransaction: function(cb){ ... },
+        approveDecryptMessage(msgData, cb) {
+            modalConfirmation(TAPi18n.__('Confirmation request'), TAPi18n.__('DECRYPT_MESSAGE_PROCESS'), function () { cb(null, false); }, function () { cb(null, true); });
+        },
+        approveEncryptionPublicKey(msgData, cb) {
+            modalConfirmation(TAPi18n.__('Confirmation request'), TAPi18n.__('GENERATING_ENCRYPTION_PUBLIC_KEY'), function () { cb(null, false); }, function () { cb(null, true); });
+        },
         signTransaction(txParams, cb) {
             if (txParams.from !== personal_wallet.getAddressString()) {
                 return callback('Account not found');
@@ -65,6 +72,15 @@ export function generateWeb3WalletEngineProvider(personal_wallet, callback = () 
             cb(null, serialized);
             return null;
         },
+        decryptMessage(msgParams, cb) {
+            cb(null, decryptMessage(msgParams.data, { privateKey: personal_wallet.getPrivateKey() }));
+            return null;
+        },
+        encryptionPublicKey(address, cb) {
+            const result = sigUtil.getEncryptionPublicKey(personal_wallet.getPrivateKey());
+            cb(null, result);
+            return null;
+        },
     }));
 
     let providerUrl = `https://mainnet.infura.io/v3/${Meteor.settings.public.infura_token}`;
@@ -89,21 +105,20 @@ export function generateWeb3WalletEngineProvider(personal_wallet, callback = () 
 }
 
 export const initializeContact = name => new Promise(function(resolve, reject) {
-    Meteor.call('loadContract', name, function(error, result) {
+    Meteor.call('loadContract', name, function(error, abi) {
         if (error) {
             reject(error);
             return false;
         }
+        const abiJson = JSON.parse(abi);
         const { blockchain } = Meteor.settings.public;
-        const contract = window.web3.eth.Contract ? new window.web3.eth.Contract(result.abi, blockchain[name]) : window.web3.eth.contract(result.abi).at(blockchain[name]);
+        const contract = window.web3.eth.Contract ? new window.web3.eth.Contract(abiJson, blockchain[name]) : window.web3.eth.contract(abiJson).at(blockchain[name]);
       
         if (!_.isUndefined(Meteor.settings.public.debug) && Meteor.settings.public.debug) {
             console.log(name, contract, blockchain[name]);
         }
 
-        // instantiate by address
-        Session.set(`${name}ContractInstance`, contract);
-        resolve();
+        resolve(contract);
         return true;
     });
     return null;
@@ -118,9 +133,9 @@ export function generateWeb3EngineProvider(cb = () => {}) {
     }
     // data source
     window.web3Engine.addProvider(
-        new RpcSubprovider({ rpcUrl: providerUrl, timeout: 5000 }),
+        new RpcSubprovider({ rpcUrl: providerUrl }),
     );
-    window.web3Engine.start();
+    // window.web3Engine.start();
 
     if (window.web3) {
         window.web3_previous = window.web3;
@@ -129,67 +144,6 @@ export function generateWeb3EngineProvider(cb = () => {}) {
     cb();
     return null;
 }
-
-/*
-//https://github.com/daonomic/trezor-wallet-provider
-export function generateWeb3EngineTrezorProvider(cb = () => {}) {
-    try {
-      let providerUrl = `https://mainnet.infura.io/v3/${Meteor.settings.public.infura_token}`;
-      if (Meteor.settings.public.debug) {
-        providerUrl = `https://ropsten.infura.io/v3/${Meteor.settings.public.infura_token}`;
-      }
-
-      window.web3Engine = new ProviderEngine();
-      window.web3Engine.addProvider(new TrezorProvider("m/44'/1'/0'/0/0"));
-
-      // data source
-      window.web3Engine.addProvider(
-        new RpcSubprovider({rpcUrl: providerUrl, timeout: 5000})
-      );
-
-      window.web3Engine.start();
-
-      if (window.web3) {
-        window.web3_previous = window.web3;
-      }
-      window.web3 = new Web3(window.web3Engine);
-
-      cb();
-    } catch(e) {
-      cb("We can't detect unlocked Trezor", null);
-    }
-    return null;
-}
-*/
-
-/*
-//https://github.com/LedgerHQ/ledgerjs/tree/master/packages/web3-subprovider
-export function generateWeb3EngineLedgerProvider(cb = () => {}) {
-    try {
-        let providerUrl = `https://mainnet.infura.io/v3/${Meteor.settings.public.infura_token}`;
-        if (Meteor.settings.public.debug) {
-          providerUrl = `https://ropsten.infura.io/v3/${Meteor.settings.public.infura_token}`;
-        }
-        window.web3Engine = new ProviderEngine();
-        window.web3Engine.addProvider(createLedgerSubprovider(TransportU2F.create(), {accountsLength: 5}));
-
-        // data source
-        window.web3Engine.addProvider(
-          new RpcSubprovider({rpcUrl: providerUrl, timeout: 5000})
-        );
-
-        window.web3Engine.start();
-
-        if (window.web3) {
-          window.web3_previous = window.web3;
-        }
-        window.web3 = new window.Web3(web3Engine);
-        cb();
-    } catch(e) {
-        cb("We can't detect unlocked Ledger", null);
-    }
-}
-*/
 
 export const signature = (text, callback) => {
     try {
@@ -270,11 +224,6 @@ export const generateNewWallet = (personal_wallet, v3json) => {
 };
 
 export const unlockWallet = (personal_wallet, error, cb = () => {}) => {
-    import { modalAlert } from '/imports/modal';
-    import { TAPi18n } from 'meteor/tap:i18n';
-    
-    import { Router } from 'meteor/iron:router';
-
     if (error) {
         modalAlert(TAPi18n.__('Oops, something happened'), TAPi18n.__('Your Passphrase is incorrect'));
         cb();
@@ -303,6 +252,23 @@ export const unlockWallet = (personal_wallet, error, cb = () => {}) => {
     return null;
 };
 
+export const createWallet = (personal_wallet, error, cb = () => {}) => {
+    generateWeb3WalletEngineProvider(personal_wallet, () => {
+        signatureAuth(function(error) {
+            if (error) {
+                modalAlert(TAPi18n.__('Oops!'), TAPi18n.__(error.reason));
+                cb();
+                return false;
+            }
+            Session.set('broadcast', new Date().getTime());
+            cb();
+            Router.go(Session.get('previousLocationPath') && Session.get('previousLocationPath') != null ? Session.get('previousLocationPath') : '/');
+            return null;
+        });
+        return null;
+    });
+    return null;
+};
 
 export const loadWeb3 = (resolve = () => {}, reject = () => {}) => {
     switch (Session.get('walletWay')) {
@@ -312,33 +278,17 @@ export const loadWeb3 = (resolve = () => {}, reject = () => {}) => {
             reject();
         } else {
             generateWeb3WalletEngineProvider(ETHWallet.fromPrivateKey(Buffer.from(Session.get('personalWallet')._privKey)), function() {
-                initializeContact('HMW').then(() => resolve());
+                resolve();
             });
         }
         break;
-        /*
-    case 'trezorWalet':
-        generateWeb3EngineTrezorProvider(function() {
-            initializeContact('HMW').then(() => resolve());
-        });
-        break;
-        */
-        /*
-    case 'ledgerWalet':
-        generateWeb3EngineLedgerProvider(function() {
-            initializeContact('HMW').then(() => resolve());
-        });
-        break;
-        */
     case 'metamask':
         if (window.ethereum) {
             window.ethereum.enable().then(() => {
-                initializeContact('HMW')
-                    .then(() => resolve());
+                resolve();
             }).catch(() => reject());
         } else {
-            initializeContact('HMW')
-                .then(() => resolve());
+            resolve();
         }
         break;
     default:

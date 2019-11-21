@@ -1,6 +1,6 @@
 import {
-    generateWeb3WalletEngineProvider, signatureAuth, generateNewWallet, unlockWallet,
-} from '/imports/client/blockchain'; // generateWeb3EngineLedgerProvider, generateWeb3EngineTrezorProvider
+    signatureAuth, generateNewWallet, unlockWallet, createWallet,
+} from '/imports/client/blockchain';
 import { modalAlert, modalConfirmation } from '/imports/modal';
 import { Template } from 'meteor/templating';
 import { saveAs } from 'file-saver';
@@ -79,54 +79,6 @@ Template.Wallet.events({
         Router.go('CreateWallet');
         return false;
     },
-    /*
-  'click #ledgerWalet': () => {
-    generateWeb3EngineLedgerProvider((error, result) => {
-      if(error) {
-        modalAlert(TAPi18n.__("Oops!"), TAPi18n.__(error.reason));
-        return false;
-      }
-      if (web3.eth.defaultAccount) {
-        signatureAuth(function(error, result) {
-          if(error) {
-            modalAlert(TAPi18n.__("Oops!"), TAPi18n.__(error.reason));
-            return false;
-          }
-          Session.set("walletWay", "ledgerWalet");
-          Session.set('broadcast', new Date().getTime());
-          Router.go(Session.get("previousLocationPath") && Session.get("previousLocationPath") != null? Session.get("previousLocationPath"): '/');
-        });
-      } else {
-        modalAlert(TAPi18n.__("Oops!"), TAPi18n.__("We can't detect unlocked device"));
-      }
-    });
-    return false;
-  },
-  /*
-  /*
-  'click #trezorWalet': () => {
-    generateWeb3EngineTrezorProvider((error, result) => {
-      if(error) {
-        modalAlert(TAPi18n.__("Oops!"), TAPi18n.__(error.reason));
-        return false;
-      }
-      if (web3.eth.defaultAccount) {
-        signatureAuth(function(error, result) {
-          if(error) {
-            modalAlert(TAPi18n.__("Oops!"), TAPi18n.__(error.reason));
-            return false;
-          }
-          Session.set("walletWay", "trezorWalet");
-          Session.set('broadcast', new Date().getTime());
-          Router.go(Session.get("previousLocationPath") && Session.get("previousLocationPath") != null? Session.get("previousLocationPath"): '/');
-        });
-      } else {
-        modalAlert(TAPi18n.__("Oops!"), TAPi18n.__("We can't detect unlocked device"));
-      }
-    });
-    return false;
-  },
-  */
     'click #unlockWalet': () => {
         Session.set('walletWay', 'unlockWalet');
         Router.go('UnlockWallet');
@@ -268,21 +220,8 @@ Template.CreateWallet.events({
                 // just fail, don't do anything
             },
             () => {
-                generateWeb3WalletEngineProvider(ETHWallet.fromPrivateKey(Buffer.from(Session.get('personalWallet')._privKey)), () => {
-                    signatureAuth(function(error) {
-                        if (error) {
-                            modalAlert(TAPi18n.__('Oops!'), TAPi18n.__(error.reason));
-                            _elem.removeClass('loading');
-                            return false;
-                        }
-                        _elem.removeClass('loading');
-                        Session.set('broadcast', new Date().getTime());
-                        Router.go(Session.get('previousLocationPath') && Session.get('previousLocationPath') != null ? Session.get('previousLocationPath') : '/');
-                        return null;
-                    });
-                });
+                createWallet(ETHWallet.fromPrivateKey(Buffer.from(Session.get('personalWallet')._privKey)), null);
             });
-  
         return false;
     },
 });

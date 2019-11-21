@@ -112,7 +112,7 @@ Factory.define('product', product, {
     DepositStatus: 'Running',
     WithdrawStatus: 'Running',
     DecimalPlaces: () => Decimal(faker.random.number({ min: 1, max: 5 })),
-    NoFees: faker.random.boolean(),
+    NoFees: false,
 });
 
 Factory.define('instrument', instrument, {
@@ -167,24 +167,24 @@ const generateFakeDataInstruments = () => {
         ProductSymbol: 'BTC',
         ProductFullName: 'Bitcoin',
         ProductType: 'CryptoCurrency',
-        DecimalPlaces: faker.random.number({ min: 1, max: 5 }),
-        NoFees: faker.random.boolean(),
+        DecimalPlaces: 8,
+        NoFees: false,
     });
   
     Factory.create('product', {
         ProductSymbol: 'ETH',
         ProductFullName: 'Ethereum',
         ProductType: 'CryptoCurrency',
-        DecimalPlaces: faker.random.number({ min: 1, max: 5 }),
-        NoFees: faker.random.boolean(),
+        DecimalPlaces: 14,
+        NoFees: false,
     });
   
     Factory.create('product', {
         ProductSymbol: 'USD',
         ProductFullName: 'United States dollar',
         ProductType: 'NationalCurrency',
-        DecimalPlaces: faker.random.number({ min: 1, max: 5 }),
-        NoFees: faker.random.boolean(),
+        DecimalPlaces: 2,
+        NoFees: false,
         Deferred: true,
     });
 
@@ -192,8 +192,8 @@ const generateFakeDataInstruments = () => {
         ProductSymbol: 'ESCB',
         ProductFullName: 'ESCB token',
         ProductType: 'CryptoCurrency',
-        DecimalPlaces: faker.random.number({ min: 1, max: 5 }),
-        NoFees: faker.random.boolean(),
+        DecimalPlaces: 14,
+        NoFees: false,
     });
   
     Factory.create('instrument', {

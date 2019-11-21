@@ -2,14 +2,14 @@ import { Random } from 'meteor/random';
 import { Decimal } from 'meteor/mongo-decimal';
 import { Job } from 'meteor/vsivsi:job-collection';
 import {
-    profile, myJobs, order, price_24hr, price_latest, ticker, price_average, instrument, product, balance, transaction, trade,
+    profile, MatchingEngineJobs, order, price_24hr, price_latest, ticker, price_average, instrument, product, balance, transaction, fee, trade, variable,
 } from '/imports/collections';
 import asyncX from 'async';
 import { moment } from 'meteor/momentjs:moment';
 import { _ } from 'meteor/underscore';
 import { Meteor } from 'meteor/meteor';
 import { check } from 'meteor/check';
-import { createNewTalk } from '/imports/cryptoTalk';
+import createNewTalk from '/imports/cryptoTalk';
 
 const getCategoryListInstrumentSymbol = function() {
     return [{ Short: 'favorite', FullName: 'Favorite' },
@@ -394,6 +394,8 @@ const calculateAlgoOrders = function(currentDate, docTrade, cb = () => {}) {
             const _orderId = _order._id;
             delete _order._id;
             _order.OrderState = 'Working';
+            _order.ReceiveTime = Date.now();
+            
             try {
                 order.insert(_order, function(e) {
                     if (e) {
@@ -409,7 +411,7 @@ const calculateAlgoOrders = function(currentDate, docTrade, cb = () => {}) {
             }
         });
     });
-    
+
     order.update({
         InstrumentSymbol: docTrade.InstrumentSymbol,
         OrderType: { $in: ['StopMarket', 'StopLimit', 'TrailingStopMarket', 'TrailingStopLimit'] },
@@ -441,13 +443,23 @@ const calculateAlgoOrders = function(currentDate, docTrade, cb = () => {}) {
             executedOrderId.push(_order._id);
             delete _order._id;
             _order.OrderState = 'Working';
+            _order.ReceiveTime = Date.now();
+            
             try {
-                order.insert(_order, function(e) {
-                    if (e) {
-                        throw new Meteor.Error(e);
-                    }
+                const result = new Promise((resolve) => {
+                    order.insert(_order, function(error) {
+                        if (!error) {
+                            resolve(true);
+                        } else {
+                            resolve(new Meteor.Error(error));
+                        }
+                    });
+                }).await();
+                if (result === true) {
                     cbSellStop();
-                });
+                } else {
+                    throw new Meteor.Error(result);
+                }
             } catch (e) {
                 // reverse balance for Algo
                 order.update({ _id: _orderId }, { $set: { OrderState: 'Expired', RejectReason: '' } }, function() {
@@ -525,7 +537,7 @@ const calculateAlgoOrders = function(currentDate, docTrade, cb = () => {}) {
         }
         
         if (updateFlag) {
-            order.update({ _id: _order._id }, { $set: { StopPrice: _order.StopPrice } }, function() {
+            order.update({ _id: _order._id }, { $set: { StopPrice: _order.StopPrice, ReceiveTime: Date.now() } }, function() {
                 cbTrailing(null, _order._id);
             });
         } else {
@@ -549,19 +561,61 @@ const _getFeeByOrder = function(doc, orderExecution) {
         taker: [Decimal('0'), 'X'],
     };
 
+    const commonFee = variable.findOne({ Name: 'CommonFee', Security: true }) ? variable.findOne({ Name: 'CommonFee', Security: true }).Value : '0.001';
+
     const _product = String(doc.InstrumentSymbol).split('_');
 
+    const _p0 = (doc.Side == 'Buy' ? doc.QuantityExecuted : doc.Price.times(doc.QuantityExecuted));
+    const _p1 = (doc.Side == 'Buy' ? doc.Price.times(doc.QuantityExecuted) : doc.QuantityExecuted);
+
     if (doc.Side == 'Buy' && orderExecution.Side == 'Sell') {
-        const _productSymbol = product.findOne({ ProductSymbol: _product[1] });
-        if (!_productSymbol.NoFees) {
-            // here is logic for fee
+        const _productSymbol1 = product.findOne({ ProductSymbol: _product[1] }, {fields: {NoFees: 1, Deferred: 1}});
+        if (!_productSymbol1.NoFees) {
+            const personalFeeTaker = fee.findOne({ UserId: doc.UserId }) ? fee.findOne({ UserId: doc.UserId }).FeeTaker : Decimal(commonFee);
+            if (!_productSymbol1.Deferred) {
+                _fee.taker = [_p1.times(personalFeeTaker), _product[1]];
+            } else {
+                _fee.taker = [_p0.times(personalFeeTaker), _product[0]];
+            }
+        }
+        const _productSymbol0 = product.findOne({ ProductSymbol: _product[0] }, {fields: {NoFees: 1, Deferred: 1}});
+        if (!_productSymbol0.NoFees) {
+            const personalFeeMaker = fee.findOne({ UserId: orderExecution.UserId }) ? fee.findOne({ UserId: orderExecution.UserId }).FeeMaker : Decimal(commonFee);
+            if (!_productSymbol0.Deferred) {
+                _fee.maker = [_p0.times(personalFeeMaker), _product[0]];
+            } else {
+                _fee.maker = [_p1.times(personalFeeMaker), _product[1]];
+            }
         }
     } else {
-        const _productSymbol = product.findOne({ ProductSymbol: _product[0] });
-        if (!_productSymbol.NoFees) {
-            // here is logic for fee
+        const _productSymbol1 = product.findOne({ ProductSymbol: _product[1] }, {fields: {NoFees: 1, Deferred: 1}});
+        if (!_productSymbol1.NoFees) {
+            const personalFeeTaker = fee.findOne({ UserId: orderExecution.UserId }) ? fee.findOne({ UserId: orderExecution.UserId }).FeeTaker : Decimal(commonFee);
+            if (!_productSymbol1.Deferred) {
+                _fee.taker = [_p1.times(personalFeeTaker), _product[1]];
+            } else {
+                _fee.taker = [_p0.times(personalFeeTaker), _product[0]];
+            }
+        }
+        const _productSymbol0 = product.findOne({ ProductSymbol: _product[0] }, {fields: {NoFees: 1, Deferred: 1}});
+        if (!_productSymbol0.NoFees) {
+            const personalFeeMaker = fee.findOne({ UserId: doc.UserId }) ? fee.findOne({ UserId: doc.UserId }).FeeMaker : Decimal(commonFee);
+            if (!_productSymbol0.Deferred) {
+                _fee.maker = [_p0.times(personalFeeMaker), _product[0]];
+            } else {
+                _fee.maker = [_p1.times(personalFeeMaker), _product[1]];
+            }
         }
     }
+    
+    if (_fee.maker[0].eq('0')) {
+        _fee.maker[1] = 'X';
+    }
+    
+    if (_fee.taker[0].eq('0')) {
+        _fee.taker[1] = 'X';
+    }
+    
     return _fee;
 };
 
@@ -582,7 +636,7 @@ const _changeBalanceByTrade = function(userId, InstrumentSymbol, side, tradeId, 
     if (!_.isUndefined(Meteor.settings.public.sandbox) && Meteor.settings.public.sandbox && userId == 'CRON') {
         return false;
     }
-    
+
     const _p0 = (side == 'Buy' ? quantity : value.times(quantity));
     const _p1 = (side == 'Buy' ? value.times(quantity) : quantity);
     
@@ -590,7 +644,7 @@ const _changeBalanceByTrade = function(userId, InstrumentSymbol, side, tradeId, 
     const balanceSide = (side == 'Buy' ? _product[0] : _product[1]);
     const inTradeSide = (side == 'Buy' ? _product[1] : _product[0]);
     
-    // console.log("1 " + side + ": balanceSide " + balanceSide + " " + _p0, "inTradeSide " +  inTradeSide + " " + _p1);
+    //console.log("1 " + side + ": balanceSide " + balanceSide + " " + _p0, "inTradeSide " +  inTradeSide + " " + _p1 + " for " + userId);
     
     const DeferredInTrade = product.findOne({ ProductSymbol: inTradeSide }).Deferred;
     const DeferredBalance = product.findOne({ ProductSymbol: balanceSide }).Deferred;
@@ -607,12 +661,14 @@ const _changeBalanceByTrade = function(userId, InstrumentSymbol, side, tradeId, 
         currentBalance = { Balance: Decimal('0') };
     }
     
-    // console.log("2 " + side + " current: balanceSide " + balanceSide + " " + currentBalance.Balance, "inTradeSide " +  inTradeSide + " " + currentInTrade.InTrade);
+    //console.log("2 " + side + " current: balanceSide " + balanceSide + " " + currentBalance.Balance, "inTradeSide " +  inTradeSide + " " + currentInTrade.InTrade);
     
     const newBalance = DeferredBalance ? Decimal('0') : currentBalance.Balance.add(_p0);
     const newInTrade = currentInTrade.InTrade.sub(_p1);
     
-    // console.log("3 " + side + " new: balanceSide " + balanceSide + " " + newBalance, "inTradeSide " +  inTradeSide + " " + newInTrade);
+    //console.log("3 " + side + " new: balanceSide " + balanceSide + " " + newBalance, "inTradeSide " +  inTradeSide + " " + newInTrade);
+    
+    //console.log("4 fee " + fee[0] + " is:" + fee[1]);
 
     transaction.insert({
         UserId: userId,
@@ -669,6 +725,38 @@ const _changeBalanceByTrade = function(userId, InstrumentSymbol, side, tradeId, 
                         return null;
                     });
                 });
+        } else {
+            let currentBalanceFee;
+            if (fee[1] != 'X') {
+                if (balanceSide == fee[1]) {
+                    currentBalanceFee = { Balance: newBalance };
+                } else {
+                    currentBalanceFee = balance.findOne({ UserId: userId, ProductSymbol: fee[1] }, { fields: { Balance: 1 } });
+                }
+            }
+            if (_.isUndefined(currentBalanceFee)) {
+                currentBalanceFee = { Balance: Decimal('0') };
+            }
+            const newBalanceFee = currentBalanceFee.Balance.sub(fee[0]);
+            transaction.insert({
+                UserId: userId,
+                Credit: fee[0],
+                Debit: Decimal('0'),
+                TransactionType: 'Fee', // ['Fee', 'Trade', 'Other', 'Reverse', 'Hold'],
+                ReferenceId: tradeId,
+                ReferenceType: 'Trade',
+                ProductSymbol: fee[1],
+                Balance: newBalanceFee,
+                TimeStamp: currentTime,
+            }, function(err) {
+                if (err) {
+                    console.log(err);
+                    return null;
+                }
+                balance.update({ UserId: userId, ProductSymbol: fee[1] },
+                    { $set: { Balance: newBalanceFee } });
+                return null;
+            });
         }
         return null;
     });
@@ -692,10 +780,15 @@ const holdBalance = function(userId, productSymbol, amount, ref, type) {
     }
   
     const _currentBalance = balance.findOne({ UserId: userId, ProductSymbol: productSymbol });
+    
+    if (_.isUndefined(_currentBalance.Balance)) {
+        throw new Meteor.Error("You don't have enough balance");
+    }
+    
     const newBalance = _currentBalance.Balance.sub(amount);
     const newInTrade = _currentBalance.InTrade.add(amount);
   
-    if (newBalance.lte(0)) {
+    if (newBalance.lt(0)) {
         throw new Meteor.Error("You don't have enough balance");
     }
   
@@ -757,7 +850,7 @@ const reverseBalance = function(userId, productSymbol, amount, ref, type) {
 
 const getCurrentPriority = function() {
     const cd = new Date();
-    return cd.getFullYear() * 8 + (cd.getMonth() + 1) * 7 + cd.getDay() * 6 + cd.getHours() * 5 + cd.getMinutes() * 4 + cd.getSeconds() * 3 + cd.getMilliseconds();
+    return cd.getFullYear() * 800 + (cd.getMonth() + 1) * 700 + cd.getDay() * 600 + cd.getHours() * 500 + cd.getMinutes() * 400 + cd.getSeconds() * 300 + cd.getMilliseconds();
 };
 
 const _fillAnyOrderType = function(docArg, orderExecutionArg, cb = () => {}) {
@@ -785,6 +878,7 @@ const _fillAnyOrderType = function(docArg, orderExecutionArg, cb = () => {}) {
         _updateParametrs.order.QuantityExecuted = !doc.QuantityExecuted.eq('0') ? doc.QuantityExecuted.add(orderExecution.Quantity) : orderExecution.Quantity;
         // for market type
         _updateParametrs.order.Price = orderExecution.LimitPrice;
+        _updateParametrs.orderExecution.Price = orderExecution.LimitPrice;
         
         // for trade record
         _updateParametrs.TradeQuantity = orderExecution.Quantity;
@@ -802,6 +896,7 @@ const _fillAnyOrderType = function(docArg, orderExecutionArg, cb = () => {}) {
         _updateParametrs.order.QuantityExecuted = !doc.QuantityExecuted.eq('0') ? doc.QuantityExecuted.add(orderExecution.Quantity) : doc.Quantity;
         // for market type
         _updateParametrs.order.Price = orderExecution.LimitPrice;
+        _updateParametrs.orderExecution.Price = orderExecution.LimitPrice;
         
         _updateParametrs.orderExecution.OrderState = 'Working';
         _updateParametrs.orderExecution.ChangeReason = 'Trade';
@@ -826,6 +921,7 @@ const _fillAnyOrderType = function(docArg, orderExecutionArg, cb = () => {}) {
         _updateParametrs.order.QuantityExecuted = !doc.QuantityExecuted.eq('0') ? doc.QuantityExecuted.add(orderExecution.Quantity) : doc.Quantity;
         // for market type
         _updateParametrs.order.Price = orderExecution.LimitPrice;
+        _updateParametrs.orderExecution.Price = orderExecution.LimitPrice;
 
         // for trade record
         _updateParametrs.TradeQuantity = orderExecution.Quantity;
@@ -882,15 +978,15 @@ const _fillAnyOrderType = function(docArg, orderExecutionArg, cb = () => {}) {
         _direction = 'DownTick';
     }
     
-    const _fee = _getFeeByOrder(doc, orderExecution);
+    const _fee = _getFeeByOrder(Object.assign(doc, _updateParametrs.order), Object.assign(orderExecution, _updateParametrs.orderExecution));
     
     // Async flow
     asyncX.waterfall([
         // update order
         function(callback) {
-            order.update({ _id: doc._id }, { $set: _updateParametrs.order }, function(err) {
+            order.update({ _id: doc._id }, { $set: _updateParametrs.order }, function(error) {
                 doc = Object.assign(doc, _updateParametrs.order);
-                callback(err); // error, [results]
+                callback(error); // error, [results]
             });
         },
         // create new trade for order
@@ -931,9 +1027,9 @@ const _fillAnyOrderType = function(docArg, orderExecutionArg, cb = () => {}) {
         function(callback) {
             // @TODO need to update balances for the taker, also need to decrease it on fee
             // console.log('propagate orderExecution ' + orderExecution._id + " State " + _updateParametrs.orderExecution.OrderState);
-            order.update({ _id: orderExecution._id }, { $set: _updateParametrs.orderExecution }, function(err) {
+            order.update({ _id: orderExecution._id }, { $set: _updateParametrs.orderExecution }, function(error) {
                 orderExecution = Object.assign(orderExecution, _updateParametrs.orderExecution);
-                callback(err); // error, [results]
+                callback(error); // error, [results]
             });
         },
         // create new trade for orderExecution
@@ -977,12 +1073,12 @@ const _fillAnyOrderType = function(docArg, orderExecutionArg, cb = () => {}) {
                 callback(err); // error, [results]
             });
         },
-    ], function (err) {
+    ], function (error) {
         // console.log(err, result);
-        if (!err && _updateParametrs.propagation) {
+        if (!error && _updateParametrs.propagation) {
             // Add job to matching engine collection
             // console.log('propagate ' + doc._id + " State " + doc.OrderState);
-            new Job(myJobs, 'Fill', { OrderId: doc._id }).priority(getCurrentPriority()).save();
+            new Job(MatchingEngineJobs, 'Fill', { OrderId: doc._id }).priority(getCurrentPriority()).save();
         }
         cb();
     });
@@ -1026,7 +1122,7 @@ const tryFillOrder = function(OrderId, cb = () => {}) {
         /**
          *  Example:
          *  Want to buy 10 coins.
-         *  In the order book sell 7 coint by 0.8$ each.
+         *  In the order book sell 7 coins by 0.8$ each.
         * */
         orderExecution = order.findAndModify({
             query: Object.assign({
@@ -1034,7 +1130,7 @@ const tryFillOrder = function(OrderId, cb = () => {}) {
                 InstrumentSymbol: doc.InstrumentSymbol,
                 OrderState: 'Working',
             }, contraSide.Parameters),
-            sort: contraSide.Conditions,
+            sort: contraSide.Sort,
             fields: {
                 UserId: 1,
                 InstrumentSymbol: 1,
@@ -1076,7 +1172,7 @@ const tryFillOrder = function(OrderId, cb = () => {}) {
                 InstrumentSymbol: doc.InstrumentSymbol,
                 OrderState: 'Working',
             }, contraSide.Parameters),
-            sort: contraSide.Conditions,
+            sort: contraSide.Sort,
             fields: {
                 UserId: 1,
                 InstrumentSymbol: 1,
@@ -1134,11 +1230,8 @@ const closeTalkConfirmTrade = function(_executionId) {
     
     trade.update({ _id: { $in: [_trade._id, _tradeExecution._id] }, TradeState: 'Deferred' },
         { $set: { TradeState: 'Closed', TradeTime: new Date().getTime() } }, { multi: true }, function () {
-            if (_trade.Side == 'Buy') {
-                _changeBalanceByTrade(_trade.UserId, _trade.InstrumentSymbol, _trade.Side, _trade._id, _trade.Value, _trade.Quantity, _fee.maker);
-            } else {
-                _changeBalanceByTrade(_tradeExecution.UserId, _tradeExecution.InstrumentSymbol, _tradeExecution.Side, _tradeExecution._id, _tradeExecution.Value, _tradeExecution.Quantity, _fee.taker);
-            }
+            _changeBalanceByTrade(_trade.UserId, _trade.InstrumentSymbol, _trade.Side, _trade._id, _trade.Price, _trade.Quantity, _fee.maker);
+            _changeBalanceByTrade(_tradeExecution.UserId, _tradeExecution.InstrumentSymbol, _tradeExecution.Side, _tradeExecution._id, _tradeExecution.Price, _tradeExecution.Quantity, _fee.taker);
         });
 };
 

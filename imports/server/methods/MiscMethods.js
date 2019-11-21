@@ -38,7 +38,9 @@ Meteor.methods({
     },
     loadContract (name) {
         try {
-            return EJSON.parse(global.Assets.getText(`contracts/${name}.json`));
+            /* eslint-disable */ 
+            return Assets.getText(`contracts/${name}.json`);
+            /* eslint-enable */
         } catch (e) {
             console.error('Wrong contract name.');
             return '';

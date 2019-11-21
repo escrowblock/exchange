@@ -33,14 +33,11 @@
     "setupprodwin": "set TOOL_NODE_FLAGS=--max-old-space-size=2047&&cd .deployx/production&&mup setup",
     "rebuildworker": "browserify public\\generate-wallet-src.js -o public\\generate-wallet.js&& browserify public\\unlock-wallet-src.js -o public\\unlock-wallet.js"
   },
-  "lint-staged": {
-    "*.js": "eslint --fix",
-    "*.jsx": "eslint --fix"
-  },
-  "pre-commit": "lint-staged",
+  "pre-commit": "lint",
   "author": "ESCB dev team and contributors",
   "license": "SEE LICENSE IN GPL-3.0-or-later AND ESCB.LICENSE",
   "dependencies": {
+    "@babel/core": "^7.6.4",
     "@babel/runtime": "^7.4.5",
     "async": "^2.6.2",
     "babel-runtime": "^6.26.0",
@@ -49,6 +46,7 @@
     "buffer": "^5.2.1",
     "bufferutil": "^3.0.3",
     "dezalgo": "^1.0.3",
+    "eth-sig-util": "^2.5.0",
     "ethereumjs-icap": "^0.3.1",
     "ethereumjs-tx": "^1.3.3",
     "ethereumjs-units": "^0.2.0",
@@ -56,6 +54,7 @@
     "file-saver": "^1.3.3",
     "jayson": "^2.0.5",
     "js-cookie": "^2.2.0",
+    "meteor-job": "^1.5.2",
     "meteor-node-stubs": "^0.4.1",
     "mime": "^2.4.2",
     "nan": "^2.3.5",
@@ -63,10 +62,11 @@
     "qrcode": "^0.9.0",
     "react": "^16.8.6",
     "react-dom": "16.8.6",
+    "redis": "^2.8.0",
     "sanitize-filename": "^1.6.0",
     "store.js": "^1.1.0",
     "utf-8-validate": "^4.0.0",
-    "web3-provider-engine": "^13.6.6",
+    "web3-provider-engine": "github:MetaMask/web3-provider-engine#b58acd122dd9813edcbf4bf9f2687ca48195ef86",
     "xml2js": "^0.4.19"
   },
   "devDependencies": {
@@ -80,6 +80,7 @@
     "eslint-plugin-import": "^2.18.0",
     "eslint-plugin-jsx-a11y": "^6.2.3",
     "eslint-plugin-meteor": "^5.1.0",
-    "eslint-plugin-react": "^7.14.2"
+    "eslint-plugin-react": "^7.14.2",
+    "pre-commit": "^1.2.2"
   }
 }

@@ -8,6 +8,7 @@ import { Router } from 'meteor/iron:router';
 import { Template } from 'meteor/templating';
 import { Meteor } from 'meteor/meteor';
 import { Session } from 'meteor/session';
+import addressValidator from 'meteor/escb:multicoin-address-validator';
 
 const clientPrepareDeposit = function(symbol, _buttonEl) {
     Meteor.call('prepareDeposit', symbol, function (error, result) {
@@ -32,7 +33,7 @@ const clientPrepareDeposit = function(symbol, _buttonEl) {
         <div class="ui ignored orange message">
           <i class="icon info"></i>
           <b>${TAPi18n.__('Important')}</b>:
-          ${TAPi18n.__('Send only <b>%s</b> to this deposit address on the main network. Sending any other coin or token to this address may result in the loss of your deposit.', symbol)}
+          ${TAPi18n.__('Send only <b>%s</b> to this deposit address on the main network_ Sending any other coin or token to this address may result in the loss of your deposit_', symbol)}
         </div>
 
         ${sandboxWarning}
@@ -66,7 +67,7 @@ const clientPrepareDeposit = function(symbol, _buttonEl) {
           <i class="icon info"></i>
           <b>${TAPi18n.__('Please note')}</b>:
           <ul>
-            <li>${TAPi18n.__('DEPOSIT_TIME', Router.routes.Transactions._path)}</li>
+            <li>${TAPi18n.__('DEPOSIT_TIME', { sprintf: [3, Router.routes.Transactions._path] })}</li>
             <li>${TAPi18n.__('DEPOSIT_LOOPBACK', result.trustedAddress)}</li>
           </ul>
         </div>
@@ -96,7 +97,7 @@ Template.Balances.events({
         <div class="ui ignored red message">
           <i class="icon info"></i>
           <b>${TAPi18n.__('Important')}</b>:
-          ${TAPi18n.__("It is SANDBOX mode, this feature doesn't work in this mode in fully.")}
+          ${TAPi18n.__("It is SANDBOX mode, this feature doesn't work in this mode in fully_")}
         </div>`;
             }
           
@@ -107,7 +108,7 @@ Template.Balances.events({
           <div class="ui form">
             <div class="ui error message">
               <div class="header">${TAPi18n.__('Wrong data')}</div>
-              <p>${TAPi18n.__('You must specify amount in a assumed format.')}</p>
+              <p>${TAPi18n.__('You must specify amount in a assumed format_')}</p>
             </div>
             <div class="field">
               <label>${TAPi18n.__('%s withdraw address', symbol)}</label>
@@ -116,7 +117,7 @@ Template.Balances.events({
               </div>
             </div>
             <div class="field">
-              <label>${TAPi18n.__('%s withdraw amount. Max is %s %s', { sprintf: [symbol, _userBalance.Balance.toString(), symbol] })}</label>
+              <label>${TAPi18n.__('%s withdraw amount_ Max is %s %s', { sprintf: [symbol, _userBalance.Balance.toString(), symbol] })}</label>
               <div class="ui action input">
                 <input type="text" class="decimal" id="withdrawAmount"/>
                 <button id="allAmount" onClick="$('#withdrawAmount').val('${_userBalance.Balance.toString()}');" data-symbol="${symbol}" class="ui blue button">
@@ -131,7 +132,7 @@ Template.Balances.events({
             <b>${TAPi18n.__('Please note')}</b>:
             <ul>
               <li>${TAPi18n.__('The asset will be sent to your trusted address %s after consideration from our security team', _userBalance.TrustedAddress)}</li>
-              <li>${TAPi18n.__('Each withdrawal transaction must be signed by your private key.')}</li>
+              <li>${TAPi18n.__('Each withdrawal transaction must be signed by your private key_')}</li>
             </ul>
           </div>
         </div>`,
@@ -176,7 +177,7 @@ Template.Balances.events({
                                         if (error) {
                                             modalAlert(TAPi18n.__('Oops, something happened'), TAPi18n.__(error.message));
                                         } else {
-                                            modalAlert(TAPi18n.__('Success'), TAPi18n.__('Your request on withdraw operation is accepted.'));
+                                            modalAlert(TAPi18n.__('Success'), TAPi18n.__('Your request on withdraw operation is accepted_'));
                                         }
                                     });
                                 return false;
@@ -187,7 +188,7 @@ Template.Balances.events({
                 'Decline',
                 'Withdraw');
         } else {
-            modalAlert(TAPi18n.__('Oops, something happened'), TAPi18n.__('Your trusted address for %s is epmty. Click on deposit to fill it.', symbol));
+            modalAlert(TAPi18n.__('Oops, something happened'), TAPi18n.__('Your trusted address for %s is epmty_ Click on deposit to fill it_', symbol));
         }
         return false;
     },
@@ -215,7 +216,7 @@ Template.Balances.events({
             <i class="icon info"></i>
             <b>${TAPi18n.__('Important')}</b>:
             ${TAPi18n.__('CAREFUL_TRUSTED_ADDRESS')}
-            <b>${TAPi18n.__("You won't be able to change this address for %s. All withdraw operation for %s will be performed this address", { sprintf: [symbol, symbol] })}</b>
+            <b>${TAPi18n.__("You won't be able to change this address for %s_ All withdraw operation for %s will be performed this address", { sprintf: [symbol, symbol] })}</b>
           </div>
     
           ${sandboxWarning}
@@ -223,7 +224,7 @@ Template.Balances.events({
           <div class="ui form">
             <div class="ui error message">
               <div class="header">${TAPi18n.__('Wrong data')}</div>
-              <p>${TAPi18n.__('You must specify address in a assumed format.')}</p>
+              <p>${TAPi18n.__('You must specify address in a assumed format_')}</p>
             </div>
             <div class="field">
               <label>${TAPi18n.__('%s trusted address', symbol)}</label>
@@ -237,7 +238,7 @@ Template.Balances.events({
             <i class="icon info"></i>
             <b>${TAPi18n.__('Please note')}</b>:
             <ul>
-              <li>${TAPi18n.__("This address will be used for deposit and withdraw operations. After setting up you won't be able to change it.")}</li>
+              <li>${TAPi18n.__("This address will be used for deposit and withdraw operations_ After setting up you won't be able to change it_")}</li>
             </ul>
           </div>
         </div>`,
@@ -255,6 +256,14 @@ Template.Balances.events({
                         return false;
                     }
           
+                    if (!addressValidator.validate($('#trustedAddress', _this).val(), symbol)) {
+                        $('.ui.form', _this).addClass('error');
+                        setTimeout(function() {
+                            $('.ui.form', _this).removeClass('error');
+                        }, 4000);
+                        return false;
+                    }
+                    
                     Meteor.call('setTrustedAddress', symbol, $('#trustedAddress', _this).val(),
                         function (error) {
                             // remove UI decoration

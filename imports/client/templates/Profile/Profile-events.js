@@ -68,7 +68,7 @@ Template.Profile.events({
     },
     'click #generateNewKey'(event) {
         event.preventDefault();
-        modalConfirmation(TAPi18n.__('Warning!'), TAPi18n.__('The current key will not be useful after the moment when new will be generated.'),
+        modalConfirmation(TAPi18n.__('Warning!'), TAPi18n.__('The current key will not be useful after the moment when new will be generated_'),
             function() {
             },
             function() {
@@ -86,7 +86,7 @@ Template.Profile.events({
                                 modalAlert(TAPi18n.__('Oops, something happened'), TAPi18n.__(error.reason));
                                 return;
                             }
-                            modalAlert(TAPi18n.__('Success'), TAPi18n.__('New key is generated.'), 2000);
+                            modalAlert(TAPi18n.__('Success'), TAPi18n.__('New key is generated_'), 2000);
                         });
                         return null;
                     });
@@ -97,7 +97,7 @@ Template.Profile.events({
                             modalAlert(TAPi18n.__('Oops, something happened'), TAPi18n.__(error.reason));
                             return;
                         }
-                        modalAlert(TAPi18n.__('Success'), TAPi18n.__('New key is generated.'), 2000);
+                        modalAlert(TAPi18n.__('Success'), TAPi18n.__('New key is generated_'), 2000);
                     });
                 }
                 return null;

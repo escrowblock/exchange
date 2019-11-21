@@ -6,7 +6,7 @@ import '/imports/server/dbhooks.js';
 import '/imports/server/jobs.js';
 import '/imports/server/hooks.js';
 import { Decimal } from 'meteor/mongo-decimal';
-import { order, balance, trade } from '/imports/collections';
+import { balance, order, trade } from '/imports/collections';
 import { Roles } from 'meteor/alanning:roles';
 import { EJSON } from 'meteor/ejson';
 import { Accounts } from 'meteor/accounts-base';
@@ -62,6 +62,7 @@ global.describe('ME TrailingStopLimit', function () {
                     id: '0x7abCaC5b70eBB22Aa05c7412058752C2BDB48865',
                     signature: '0x9127cd6beb3dcf6789842d2a820fd588aca8d8db4b19bf08d6fcc06efa17d99b5d24e3ca063d766295fbcb7062b4d5ca03c8dd6fb99e787636f43bf96d5b66251b',
                     publickey: 'c9b45b3481bdc48d8ddb09f5f47f513c38993ad2731b60efa2d8f89f802d6e37134e68608041eebda9fdad8be96cd03183201ac0eebaacb20865aef5a8a2b9bd',
+                    encryptionpublickey: 'nFxp+ZRkfG3FRJOAp1TM46REHqXHBgyloazLNe+J+XE=',
                 },
                 {});
             
@@ -74,6 +75,7 @@ global.describe('ME TrailingStopLimit', function () {
                     id: '0xf593ca6A1D5013298F7dE87AF4386A807C02F7e8',
                     signature: '0x4d6d5047b1be60f4d158be8c6e2e5022ad3ea02b7c6f083338c53e86109a11c1335d58480b66707270c13fdef7c0479a44ba2fe224f5c078574307b01229ee361b',
                     publickey: 'dd036f14b0198dae36381242e1b47d249909446699d79bf1a478e7efe274c8caa54584ff908beb900e317b7ac535941815fd605816c33a8bbcca7f027058508b',
+                    encryptionpublickey: 'fLCuEBf7FMygt2/lGHFyk4+/vEhjoE4ouZOsQZt+OXQ=',
                 },
                 {});
             
@@ -88,7 +90,7 @@ global.describe('ME TrailingStopLimit', function () {
     /**
      * Order type is TrailingStopLimit
     * */
-    
+
     // 1 to 1 simple stop trailing limit
     global.it('test StopPprice buy trailing stop limit order by 1001 with stop price 900 with deal by 870 TrailingAmount 50 and PegPriceType Last', function (done) {
         this.timeout(10000);
@@ -145,7 +147,7 @@ global.describe('ME TrailingStopLimit', function () {
             }
         }), 7000);
     });
-    
+
     // Full test buy
     global.it('test Full trades StopPprice buy trailing stop limit order by 1001 with stop price 900 with deal by 870 TrailingAmount 50 and PegPriceType Last', function (done) {
         this.timeout(10000);
@@ -246,9 +248,9 @@ global.describe('ME TrailingStopLimit', function () {
             } catch (e) {
                 done(e);
             }
-        }), 5000);
+        }), 7000);
     });
-    
+
     global.it('test StopPprice sell trailing stop limit order by 1001 with stop price 900 with deal by 970 TrailingAmount 50 and PegPriceType Last', function (done) {
         this.timeout(10000);
         
@@ -304,7 +306,7 @@ global.describe('ME TrailingStopLimit', function () {
             }
         }), 7000);
     });
-    
+
     // Full test sell
     global.it('test Full trades StopPprice sell trailing stop limit order by 1001 with stop price 900 with deal by 970 TrailingAmount 50 and PegPriceType Last', function (done) {
         this.timeout(10000);
@@ -364,7 +366,7 @@ global.describe('ME TrailingStopLimit', function () {
         orderBuy3.Quantity = Decimal('3.145');
         orderBuy3.OrigQuantity = Decimal('3.145');
         orderBuy3.Side = 'Buy';
-        
+         
         const buyId3 = order.insert(orderBuy3);
         
         setTimeout(Meteor.bindEnvironment(() => {
@@ -405,6 +407,6 @@ global.describe('ME TrailingStopLimit', function () {
             } catch (e) {
                 done(e);
             }
-        }), 5000);
+        }), 7000);
     });
 });

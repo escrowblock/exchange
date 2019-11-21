@@ -1,5 +1,7 @@
 import sendNotification from '/imports/notifications';
-import { talk_message, talk, profile } from '/imports/collections';
+import {
+    talk_message, talk, profile, user_files, schemas,
+} from '/imports/collections';
 import { _ } from 'meteor/underscore';
 import { Meteor } from 'meteor/meteor';
 import { check } from 'meteor/check';
@@ -8,29 +10,26 @@ import { TAPi18n } from 'meteor/tap:i18n';
 import {
     closeTalkConfirmTrade, closeTalkRefuseTrade, resolveDisputeTrade,
 } from '/imports/tools';
-import {
-    addArbitrationToTalk,
-} from '/imports/cryptoTalk';
 import util from 'ethereumjs-util';
 
 Meteor.methods({
     setReadMessage (TalkId) {
         if (Meteor.userId() == null) {
-            throw new Meteor.Error(403, 'Please log in to mark this message as read');
+            throw new Meteor.Error(403, 'Please log in to do this operation');
         }
         talk_message.update({ TalkId, To: Meteor.userId(), Status: false }, { $set: { Status: true, ReadAt: new Date().getTime() } }, { multi: true });
     },
     sendMessageToTalk (docArg) {
         if (Meteor.userId() == null) {
-            throw new Meteor.Error(403, 'Please log in to send message');
+            throw new Meteor.Error(403, 'Please log in to do this operation');
         }
         const doc = Object.assign(docArg);
         doc.From = Meteor.userId();
         doc.CreatedAt = new Date().getTime();
         doc.Status = false;
-        const talk_instance = talk.findOne({ _id: doc.TalkId, $or: [{ ArbitrationId: Meteor.userId() }, { UserId: Meteor.userId() }, { CounterpartyId: Meteor.userId() }], TalkState: { $in: ['Opened', 'Disputed'] } }, { fields: { CounterpartyId: 1, UserId: 1 } });
+        const talk_instance = talk.findOne({ _id: doc.TalkId, $or: [{ ArbitrationId: Meteor.userId() }, { UserId: Meteor.userId() }, { CounterpartyId: Meteor.userId() }], TalkState: { $in: ['Opened', 'Disputed'] } }, { fields: { ArbitrationId: 1, CounterpartyId: 1, UserId: 1 } });
         if (!talk_instance) {
-            throw new Meteor.Error('You don`t have permissions on this action');
+            throw new Meteor.Error("You don't have permissions on this action");
         }
     
         const _notifications = [];
@@ -62,7 +61,7 @@ Meteor.methods({
         }
         //
 
-        check(doc, talk_message);
+        check(doc, schemas.talk_message);
         const last_id = talk_message.insert(doc);
         if (last_id) {
             talk.update({ _id: doc.TalkId }, { $inc: { CountMessages: 1 }, $set: { DateLastMessage: new Date().getTime() } });
@@ -73,9 +72,15 @@ Meteor.methods({
         });
         return last_id;
     },
+    setEncryptionPublicKey (encryptionpublickey) {
+        if (Meteor.userId() == null) {
+            throw new Meteor.Error(403, 'Please log in to do this operation');
+        }
+        Meteor.users.update({ _id: Meteor.userId() }, { $set: { 'services.ethereum.encryptionpublickey': encryptionpublickey } });
+    },
     confirmTrade (TalkId) {
         if (Meteor.userId() == null) {
-            throw new Meteor.Error(403, 'Please log in to send message');
+            throw new Meteor.Error(403, 'Please log in to do this operation');
         }
         this.unblock();
         const _talk = talk.findOne({ _id: TalkId, UserId: Meteor.userId(), TalkState: 'Opened' }, { fields: { ReferenceType: 1, ReferenceId: 1, CounterpartyId: 1 } });
@@ -90,7 +95,7 @@ Meteor.methods({
     },
     refuseTrade (TalkId) {
         if (Meteor.userId() == null) {
-            throw new Meteor.Error(403, 'Please log in to send message');
+            throw new Meteor.Error(403, 'Please log in to do this operation');
         }
         this.unblock();
         const _talk = talk.findOne({ _id: TalkId, CounterpartyId: Meteor.userId(), TalkState: 'Opened' }, { fields: { ReferenceType: 1, ReferenceId: 1, UserId: 1 } });
@@ -103,9 +108,26 @@ Meteor.methods({
             sendNotification(TAPi18n.__('Trade is refused', {}, lang), TAPi18n.__('%s has refused the trade %s', { sprintf: [userName, _talk.ReferenceId] }, lang), _talk.UserId, '/transactions');
         }
     },
-    callArbitration (TalkId) {
+    getEncryptionPublicKeyArbitration (TalkId) {
         if (Meteor.userId() == null) {
-            throw new Meteor.Error(403, 'Please log in to send message');
+            throw new Meteor.Error(403, 'Please log in to do this operation');
+        }
+        this.unblock();
+        
+        const _talk = talk.findOne({ _id: TalkId, TalkState: 'Opened' });
+        const arbitration = Meteor.users.findOne({ 'roles.__global_roles__': 'arbitration', _id: { $nin: [_talk.UserId, _talk.CounterpartyId] } }, { fields: { _id: 1, services: 1 } });
+
+        if (arbitration && _talk) {
+            return { ArbitrationUserId: arbitration._id, EncryptionPublicKey: arbitration.services.ethereum.encryptionpublickey };
+        }
+        throw new Meteor.Error(404, "Arbitration doesn't have the authority to provide this service_ Please, talk with the support service_");
+    },
+    callArbitration (TalkId, ArbitrationUserId, EncryptedMessageForArbitration) {
+        if (Meteor.userId() == null) {
+            throw new Meteor.Error(403, 'Please log in to do this operation');
+        }
+        if (_.isUndefined(Meteor.users.findOne({ 'roles.__global_roles__': 'arbitration', _id: ArbitrationUserId }))) {
+            throw new Meteor.Error(403, "Arbitration doesn't have the authority to provide this service_ Please, talk with the support service_");
         }
         this.unblock();
         const _talk = talk.findOne({ _id: TalkId, $or: [{ CounterpartyId: Meteor.userId() }, { UserId: Meteor.userId() }], TalkState: 'Opened' }, {
@@ -115,18 +137,31 @@ Meteor.methods({
         });
         if (!_.isUndefined(_talk) && _talk.ReferenceType == 'Trade') {
             talk.update({ _id: TalkId, $or: [{ CounterpartyId: Meteor.userId() }, { UserId: Meteor.userId() }] }, { $set: { TalkState: 'Disputed' } }, function () {
-                addArbitrationToTalk(TalkId);
+                talk.update({ _id: TalkId }, {
+                    $set: { ArbitrationId: ArbitrationUserId },
+                    $push: {
+                        Identity:
+                                                            {
+                                                                UserId: ArbitrationUserId,
+                                                                Body: EncryptedMessageForArbitration,
+                                                            },
+                    },
+                });
+                
+                const langArbitration = Meteor.users.findOne({ _id: ArbitrationUserId }, { fields: { 'profile.language': 1 } }).profile.language;
+                sendNotification(TAPi18n.__('You have the new request for trade arbitration', {}, langArbitration), TAPi18n.__('You have to participate in the talk and resolve a dispute between two counterparties_', langArbitration), ArbitrationUserId, `/talk/${TalkId}`);
+                
                 const _receiver = _talk.UserId != Meteor.userId() ? _talk.CounterpartyId : _talk.UserId;
-                const lang = Meteor.users.findOne({ _id: _receiver }, { fields: { 'profile.language': 1 } }).profile.language;
+                const langReceiver = Meteor.users.findOne({ _id: _receiver }, { fields: { 'profile.language': 1 } }).profile.language;
                 const userName = profile.findOne({ UserId: _receiver }, { fields: { UserName: 1 } }).UserName ? profile.findOne({ UserId: _receiver }, { fields: { UserName: 1 } }).UserName : TAPi18n.__('Some counterparty');
       
-                sendNotification(TAPi18n.__('Trade is in disputed status', {}, lang), TAPi18n.__('%s has transferred the trade %s to the disputed status', { sprintf: [userName, _talk.ReferenceId] }, lang), _receiver, `/talk/${TalkId}`);
+                sendNotification(TAPi18n.__('Trade is in disputed status', {}, langReceiver), TAPi18n.__('%s has transferred the trade %s to the disputed status', { sprintf: [userName, _talk.ReferenceId] }, langReceiver), _receiver, `/talk/${TalkId}`);
             });
         }
     },
     resolveDispute (TalkId, approvedAmount, symbol, signature) {
         if (Meteor.userId() == null) {
-            throw new Meteor.Error(403, 'Please log in to send message');
+            throw new Meteor.Error(403, 'Please log in to do this operation');
         }
         check(TalkId, String);
         check(approvedAmount, Number);
@@ -159,7 +194,6 @@ Meteor.methods({
                 throw new Meteor.Error("The operation can't be confirmed");
             }
       
-      
             if (_DbPublickey != publickey.toString('hex')) {
                 throw new Meteor.Error('Your signature is wrong');
             }
@@ -173,5 +207,9 @@ Meteor.methods({
                 sendNotification(TAPi18n.__('The dispute for trade is resolved', {}, lang), TAPi18n.__('The arbitration has resolved the trade %s', { sprintf: [_talk.ReferenceId] }, lang), _UserId, '/transactions');
             });
         }
+    },
+    deleteFile (id) {
+        check(id, String);
+        user_files.remove({ _id: id, userId: Meteor.userId() });
     },
 });

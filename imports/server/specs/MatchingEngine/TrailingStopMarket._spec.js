@@ -6,7 +6,7 @@ import '/imports/server/dbhooks.js';
 import '/imports/server/jobs.js';
 import '/imports/server/hooks.js';
 import { Decimal } from 'meteor/mongo-decimal';
-import { order, balance, trade } from '/imports/collections';
+import { balance, order, trade } from '/imports/collections';
 import { Roles } from 'meteor/alanning:roles';
 import { EJSON } from 'meteor/ejson';
 import { Accounts } from 'meteor/accounts-base';
@@ -62,6 +62,7 @@ global.describe('ME TrailingStopMarket', function () {
                     id: '0x7abCaC5b70eBB22Aa05c7412058752C2BDB48865',
                     signature: '0x9127cd6beb3dcf6789842d2a820fd588aca8d8db4b19bf08d6fcc06efa17d99b5d24e3ca063d766295fbcb7062b4d5ca03c8dd6fb99e787636f43bf96d5b66251b',
                     publickey: 'c9b45b3481bdc48d8ddb09f5f47f513c38993ad2731b60efa2d8f89f802d6e37134e68608041eebda9fdad8be96cd03183201ac0eebaacb20865aef5a8a2b9bd',
+                    encryptionpublickey: 'nFxp+ZRkfG3FRJOAp1TM46REHqXHBgyloazLNe+J+XE=',
                 },
                 {});
             
@@ -69,13 +70,23 @@ global.describe('ME TrailingStopMarket', function () {
                 UserId: userTaker.userId, ProductSymbol: 'BTC', Balance: Decimal('1000000'), InTrade: Decimal('0'),
             });
             
+            balance.insert({
+                UserId: userTaker.userId, ProductSymbol: 'ETH', Balance: Decimal('1000000'), InTrade: Decimal('0'),
+            });
+            
+            
             userMaker = Accounts.updateOrCreateUserFromExternalService('ethereum',
                 {
                     id: '0xf593ca6A1D5013298F7dE87AF4386A807C02F7e8',
                     signature: '0x4d6d5047b1be60f4d158be8c6e2e5022ad3ea02b7c6f083338c53e86109a11c1335d58480b66707270c13fdef7c0479a44ba2fe224f5c078574307b01229ee361b',
                     publickey: 'dd036f14b0198dae36381242e1b47d249909446699d79bf1a478e7efe274c8caa54584ff908beb900e317b7ac535941815fd605816c33a8bbcca7f027058508b',
+                    encryptionpublickey: 'fLCuEBf7FMygt2/lGHFyk4+/vEhjoE4ouZOsQZt+OXQ=',
                 },
                 {});
+            
+            balance.insert({
+                UserId: userMaker.userId, ProductSymbol: 'BTC', Balance: Decimal('1000000'), InTrade: Decimal('0'),
+            });
             
             balance.insert({
                 UserId: userMaker.userId, ProductSymbol: 'ETH', Balance: Decimal('1000000'), InTrade: Decimal('0'),
@@ -335,7 +346,7 @@ global.describe('ME TrailingStopMarket', function () {
         orderSell.Side = 'Sell';
         
         const sellId = order.insert(orderSell);
-        
+
         const orderBuy2 = EJSON.clone(orderInstance);
         orderBuy2.UserId = userTaker.userId;
         orderBuy2.LimitPrice = Decimal('920');
@@ -344,6 +355,15 @@ global.describe('ME TrailingStopMarket', function () {
         orderBuy2.Side = 'Buy';
         
         const buyId2 = order.insert(orderBuy2);
+        
+        const orderBuyTMS = EJSON.clone(orderInstance);
+        orderBuyTMS.UserId = userTaker.userId;
+        orderBuyTMS.LimitPrice = Decimal('930.33');
+        orderBuyTMS.Quantity = Decimal('3.145');
+        orderBuyTMS.OrigQuantity = Decimal('3.145');
+        orderBuyTMS.Side = 'Buy';
+        
+        const buyIdTSM = order.insert(orderBuyTMS);
         
         const orderSell2 = EJSON.clone(orderInstance);
         orderSell2.UserId = userMaker.userId;
@@ -354,20 +374,11 @@ global.describe('ME TrailingStopMarket', function () {
         
         const sellId2 = order.insert(orderSell2);
         
-        const orderBuy3 = EJSON.clone(orderInstance);
-        orderBuy3.UserId = userTaker.userId;
-        orderBuy3.LimitPrice = Decimal('930.33');
-        orderBuy3.Quantity = Decimal('3.145');
-        orderBuy3.OrigQuantity = Decimal('3.145');
-        orderBuy3.Side = 'Buy';
-        
-        const buyId3 = order.insert(orderBuy3);
-        
         setTimeout(Meteor.bindEnvironment(() => {
             try {
                 const sellIdSTL_new = order.findOne({ PreviousOrderRevision: sellIdSTL })._id;
 
-                chai.assert.equal(trade.find({ OrderId: { $in: [buyId, sellId, buyId2, sellId2, sellIdSTL_new, buyId3] } }).count(), 6);
+                chai.assert.equal(trade.find({ OrderId: { $in: [buyId, sellId, buyId2, sellId2, sellIdSTL_new, buyIdTSM] } }).count(), 6);
 
                 chai.assert.equal(trade.findOne({ OrderId: buyId }).RemainingQuantity.toString(), '0', 'buy RemainingQuantity is 0');
                 chai.assert.equal(trade.findOne({ OrderId: sellId }).RemainingQuantity.toString(), '0', 'sell RemainingQuantity is 0');
@@ -376,7 +387,7 @@ global.describe('ME TrailingStopMarket', function () {
                 chai.assert.equal(trade.findOne({ OrderId: sellId2 }).RemainingQuantity.toString(), '0', 'sell2 RemainingQuantity is 0');
                 
                 chai.assert.equal(trade.findOne({ OrderId: sellIdSTL_new }).RemainingQuantity.toString(), '0', 'sellIdSTL_new RemainingQuantity is 0');
-                chai.assert.equal(trade.findOne({ OrderId: buyId3 }).RemainingQuantity.toString(), '0', 'buyId3 RemainingQuantity is 0');
+                chai.assert.equal(trade.findOne({ OrderId: buyIdTSM }).RemainingQuantity.toString(), '0', 'buyIdTSM RemainingQuantity is 0');
 
                 chai.assert.equal(order.findOne({ _id: buyId }).Quantity.toString(), '0', 'buy Quantity is 0');
                 chai.assert.equal(order.findOne({ _id: buyId2 }).Quantity.toString(), '0', 'buy2 Quantity is 0');
@@ -394,12 +405,12 @@ global.describe('ME TrailingStopMarket', function () {
                 chai.assert.equal(order.findOne({ _id: sellIdSTL_new }).QuantityExecuted.toString(), '3.145', 'sellSTL QuantityExecuted is 0');
                 chai.assert.equal(order.findOne({ _id: sellIdSTL_new }).Quantity.toString(), '0', 'sellSTL Quantity is 3.145');
                 
-                chai.assert.equal(order.findOne({ _id: buyId3 }).QuantityExecuted.toString(), '3.145', 'buy3 QuantityExecuted is 0');
-                chai.assert.equal(order.findOne({ _id: buyId3 }).Quantity.toString(), '0', 'buy3 Quantity is 3.145');
+                chai.assert.equal(order.findOne({ _id: buyIdTSM }).QuantityExecuted.toString(), '3.145', 'buyIdTSM QuantityExecuted is 0');
+                chai.assert.equal(order.findOne({ _id: buyIdTSM }).Quantity.toString(), '0', 'buyIdTSM Quantity is 3.145');
                 done();
             } catch (e) {
                 done(e);
             }
-        }), 7000);
+        }), 6000);
     });
 });

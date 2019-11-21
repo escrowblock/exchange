@@ -1,25 +1,26 @@
 import { tryFillOrder, calculateAlgoOrders } from '/imports/tools';
 import { Job } from 'meteor/vsivsi:job-collection';
-import { myJobs } from '/imports/collections';
+import { MatchingEngineJobs } from '/imports/collections';
 import { _ } from 'meteor/underscore';
 import { Meteor } from 'meteor/meteor';
+// import { LongRunningChildProcess } from 'meteor/sanjo:long-running-child-process';
 
 // Can be scalled by scheme https://github.com/vsivsi/meteor-job-collection
 // The first optimization can be done by the splitting on queues by instruments
 // Clean old jobs
-new Job(myJobs, 'cleanup', {}).repeat({
-    schedule: myJobs.later.parse.text('every 5 minutes'),
+new Job(MatchingEngineJobs, 'cleanup', {}).repeat({
+    schedule: MatchingEngineJobs.later.parse.text('every 2 minutes'),
 }).save({
     cancelRepeats: true,
 });
 
-const q = myJobs.processJobs('cleanup', {
+const q = MatchingEngineJobs.processJobs('cleanup', {
     pollInterval: false,
     workTimeout: 60 * 1000,
 }, function(job, cb) {
     const current = new Date();
-    current.setMinutes(current.getMinutes() - 5);
-    const ids = myJobs.find({
+    current.setMinutes(current.getMinutes() - 2);
+    const ids = MatchingEngineJobs.find({
         status: {
             $in: Job.jobStatusRemovable,
         },
@@ -34,13 +35,13 @@ const q = myJobs.processJobs('cleanup', {
         return d._id;
     });
     if (ids.length > 0) {
-        myJobs.removeJobs(ids);
+        MatchingEngineJobs.removeJobs(ids);
     }
     job.done(`Removed ${ids.length} old jobs`);
     return cb();
 });
 
-myJobs.find({
+MatchingEngineJobs.find({
     type: 'cleanup',
     status: 'ready',
 }).observe({
@@ -50,51 +51,120 @@ myJobs.find({
 });
 
 if (!_.isUndefined(Meteor.settings.public.debug) && Meteor.settings.public.debug) {
-    // myJobs.setLogStream(process.stdout);
+    // MatchingEngineJobs.setLogStream(process.stdout);
 }
 
-const qFill = myJobs.processJobs('Fill', {
-    pollInterval: 1000000000, // Don't poll
+const qFill = MatchingEngineJobs.processJobs('Fill', {
+    pollInterval: false,
 },
 function (job, cb) {
     const { data } = job;
-    // console.log('fill order online ' + data.OrderId);
+    if (Meteor.isTest) {
+        console.log(`fill order started ${data.OrderId}`);
+    }
     tryFillOrder(data.OrderId, function() {
+        if (Meteor.isTest) {
+            console.log(`fill order done ${data.OrderId}`);
+        }
         job.done(`order done OrderId is ${data.OrderId}`);
         cb();
     });
 });
 
-myJobs.find({ type: 'Fill', status: 'ready' }).observe({
+MatchingEngineJobs.find({ type: 'Fill', status: 'ready' }).observe({
     added () {
         qFill.trigger();
     },
 });
 
+/*
 // by time
-myJobs.processJobs('Fill', {
-    pollInterval: 1000, // every second
+MatchingEngineJobs.processJobs('Fill', {
+    pollInterval: 100, // every miliseconds
 },
 function (job, cb) {
     const { data } = job;
-    // console.log('fill order by time ' + data.OrderId);
+    if (Meteor.isTest) {
+        console.log('fill order started ' + data.OrderId);
+    }
     tryFillOrder(data.OrderId, function() {
+        if (Meteor.isTest) {
+            console.log('fill order done ' + data.OrderId);
+        }
         job.done(`order done OrderId is ${data.OrderId}`);
         cb();
     });
 });
+*/
 
-const qAlgo = myJobs.processJobs('Algo', {
-    pollInterval: 1000000000, // Don't poll
+const qAlgo = MatchingEngineJobs.processJobs('Algo', {
+    pollInterval: false,
 },
 function (job, cb) {
     const { data } = job;
-    // console.log('algo order ' + data.trade._id);
+    if (Meteor.isTest) {
+        console.log(`algo trade started ${data.trade._id}`);
+    }
     calculateAlgoOrders(data.currentDate, data.trade, function() {
-        // console.log('trade done ' + data.trade._id);
+        if (Meteor.isTest) {
+            console.log(`algo trade done ${data.trade._id}`);
+        }
         job.done(`trade done _id ${data.trade._id}`);
         cb();
     });
 });
 
-myJobs.find({ type: 'Algo', status: 'ready' }).observe({ added () { qAlgo.trigger(); } });
+MatchingEngineJobs.find({ type: 'Algo', status: 'ready' }).observe({
+    added () {
+        qAlgo.trigger();
+    },
+});
+
+/*
+// by time
+MatchingEngineJobs.processJobs('Algo', {
+    pollInterval: 100, // every 100 miliseconds
+},
+function (job, cb) {
+    const { data } = job;
+    if (Meteor.isTest) {
+        console.log('algo trade started ' + data.trade._id);
+    }
+    calculateAlgoOrders(data.currentDate, data.trade, function() {
+        if (Meteor.isTest) {
+            console.log('algo trade done ' + data.trade._id);
+        }
+        job.done(`trade done _id ${data.trade._id}`);
+        cb();
+    });
+});
+*/
+/*
+// @TODO on v2
+//Distributed strategy for Matching Engine
+const path = Npm.require('path');
+const execPath = path.join(`${process.env.PWD}/`, '.private');
+const executable = path.join(execPath, 'MatchingEngineWorker.js');
+
+const workerProcess = new LongRunningChildProcess(`MatchingEngineWorker`);
+const puppeteerWorkerProcess = [];
+
+const env = {"METEOR_TOKEN": "xUNCVLCx6P/ZUT5TngLOSZcussFcCRxYOS4Gb0sU7NE=",
+             "REDIS_PORT": Meteor.settings.redisOplog.redis.port,
+             "REDIS_HOST": Meteor.settings.redisOplog.redis.host
+            };
+
+if (!_.isUndefined(Meteor.settings.redisOplog.redis.password)) {
+    env.REDIS_PASSWORD = Meteor.settings.redisOplog.redis.password;
+}
+
+//METEOR_TOKEN - here need to add Auth token directly to the table
+puppeteerWorkerProcess.push(
+    workerProcess.spawn({"command": "node",
+                         "args": [executable],
+                         "options": {"env": env,
+                                     "stdio": (!_.isUndefined(Meteor.settings.public.debug) && Meteor.settings.public.debug) ? "inherit": "ignore"
+                                    }
+                        })
+);
+*/

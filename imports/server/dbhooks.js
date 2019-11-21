@@ -3,7 +3,7 @@ import {
     updateTicker, updateAveragePrice, holdBalance,
     reverseBalance, getCurrentPriority,
 } from '/imports/tools';
-import { order, trade, myJobs } from '/imports/collections';
+import { order, trade, MatchingEngineJobs } from '/imports/collections';
 import { Job } from 'meteor/vsivsi:job-collection';
 import { _ } from 'meteor/underscore';
 import { Meteor } from 'meteor/meteor';
@@ -15,7 +15,7 @@ trade.after.insert(function (userId, doc) {
         updateLatestPrice(currentDate, doc);
     
         // Add job to matching engine collection
-        new Job(myJobs, 'Algo', { currentDate, trade: doc }).priority(getCurrentPriority()).save();
+        new Job(MatchingEngineJobs, 'Algo', { currentDate, trade: doc }).priority(getCurrentPriority()).save();
         // console.log('algo order ' + doc._id);
     
         updateTicker(currentDate, doc);
@@ -34,7 +34,7 @@ trade.after.update(function(userId, doc, fieldNames, modifier) {
         updateLatestPrice(currentDate, doc);
     
         // Add job to matching engine collection
-        new Job(myJobs, 'Algo', { currentDate, trade: doc }).priority(getCurrentPriority()).save();
+        new Job(MatchingEngineJobs, 'Algo', { currentDate, trade: doc }).priority(getCurrentPriority()).save();
         // console.log('algo order ' + doc._id);
     
         updateTicker(currentDate, doc);
@@ -74,7 +74,7 @@ order.before.insert(function(userId, doc) {
     
 order.after.insert(function(userId, doc) {
     // Add job to matching engine collection
-    new Job(myJobs, 'Fill', { OrderId: doc._id }).priority(getCurrentPriority()).save();
+    new Job(MatchingEngineJobs, 'Fill', { OrderId: doc._id }).priority(getCurrentPriority()).save();
 });
 
 order.after.update(function(userId, doc, fieldNames, modifier) {

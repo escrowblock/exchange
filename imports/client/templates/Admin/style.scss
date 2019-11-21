@@ -14,13 +14,15 @@
    padding-left: 1.5em;
 }
 
-.ui.modal {
-  position: absolute;
-  left: 20%;
-  top: 30%;
-  .content {
-    height: auto;
-    min-height: auto;
+.admin-layout {
+  .ui.modal {
+    position: absolute;
+    left: 20%;
+    top: 30%;
+    .content {
+      height: auto;
+      min-height: auto;
+    }
   }
 }
 

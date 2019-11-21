@@ -8,12 +8,12 @@ Template.AdminLayout.events({
     'click .btn-delete'(event) {
         const _id = $(event.target).attr('doc');
         $('#admin-delete-modal')
-        .modal({
-            onApprove : function() {
-                return Meteor.call('adminRemoveDoc', Session.get('admin_collection_name'), parseID(_id));
-            }
-        })
-        .modal('show');
+            .modal({
+                onApprove() {
+                    return Meteor.call('adminRemoveDoc', Session.get('admin_collection_name'), parseID(_id));
+                },
+            })
+            .modal('show');
   
         if (Session.equals('admin_collection_name', 'Users')) {
             Session.set('admin_id', _id);

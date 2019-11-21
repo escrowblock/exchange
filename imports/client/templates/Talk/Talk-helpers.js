@@ -4,7 +4,7 @@ import { talk, talk_message } from '/imports/collections';
 import { _ } from 'meteor/underscore';
 import { Template } from 'meteor/templating';
 import { Meteor } from 'meteor/meteor';
-import { EJSON } from 'meteor/ejson';
+import { Session } from 'meteor/session';
 
 Template.Talk.helpers({
     puredate () {
@@ -24,7 +24,7 @@ Template.Talk.helpers({
         if (!_.isUndefined(this.Files)) {
             _.map(this.Files, function (file) {
                 let icon = 'file';
-                switch (file.type) {
+                switch (file.Type) {
                 case 'text/plain':
                     icon = 'file alternate';
                     break;
@@ -44,7 +44,7 @@ Template.Talk.helpers({
                 default:
                     break;
                 }
-                _files_links.push(`<a href="${file.Link}" target="_blank"><i class="icon ${icon}"></i> ${file.Name}</a>`);
+                _files_links.push(`<a href="${file.Link}" data-type="${file.Type}" data-name="${file.Name}" class="ipfs" target="_blank"><i class="icon ${icon}"></i> ${file.Name}</a>`);
             });
         }
         if (_files_links.length > 0) {
@@ -80,27 +80,17 @@ Template.Talk.helpers({
     count () {
         return talk_message.find().count();
     },
+    channelIdentity() {
+        return !_.isUndefined(Session.get(`channelIdentity${this.Talk._id}`)) ? Session.get(`channelIdentity${this.Talk._id}`) : false;
+    },
     decrypt (id, message) {
-        const instance = Template.instance();
-        if (!_.isUndefined(instance.decryptedMessages.get(id))) {
-            return instance.decryptedMessages.get(id);
-        }
-        let channelIdentity;
         const { data } = Template.instance();
-        if (data.Talk) {
-            const values = Object.values(data.Talk.Identity);
-            for (let i = 0; i < values.length; i += 1) {
-                if (values[i].UserId == Meteor.userId()) { // @TODO after Metamask will add decrypt implementation
-                
-                }
-                if (values[i].UserId == 'Plain') {
-                    channelIdentity = EJSON.parse(values[i].Body);
-                }
+        if (Session.get(`channelIdentity${data.Talk._id}`)) {
+            const instance = Template.instance();
+            if (!_.isUndefined(instance.decryptedMessages.get(id))) {
+                return instance.decryptedMessages.get(id);
             }
-
-            decryptMessage(message, channelIdentity).then((result) => {
-                instance.decryptedMessages.set(id, result);
-            });
+            instance.decryptedMessages.set(id, message ? decryptMessage(message, Session.get(`channelIdentity${data.Talk._id}`)) : '');
             return instance.decryptedMessages.get(id);
         }
         return '';

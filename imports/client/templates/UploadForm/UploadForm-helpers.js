@@ -1,5 +1,6 @@
 import { moment } from 'meteor/momentjs:moment';
 import { Template } from 'meteor/templating';
+import { _ } from 'meteor/underscore';
 import { Session } from 'meteor/session';
 
 Template.UploadForm.helpers({
@@ -12,7 +13,7 @@ Template.UploadForm.helpers({
     status() {
         let estimateDuration; let i; let j; let len; let onPause; let progress; let upload;
         i = 0;
-        const uploads = Session.get('uploads').get();
+        const uploads = !_.isUndefined(window.globalDict.get('uploads')) ? window.globalDict.get('uploads').get() : 0;
         progress = 0;
         const { uploadQTY } = Template.instance();
         estimateDuration = 0;
@@ -53,18 +54,5 @@ Template.UploadForm.helpers({
             };
         }
         return false;
-    },
-    showSettings() {
-        return Template.instance().showSettings.get();
-    },
-    showProjectInfo() {
-        return Session.get('showProjectInfo').get();
-    },
-    uploadTransport() {
-        return Session.get('uploadTransport');
-    },
-    checked(file) {
-        const fileWorkOrderId = this && this.data && this.data.data && this.data.data.request && this.data.data.request.fileWorkOrderId;
-        return { checked: fileWorkOrderId === (file && file._id) };
     },
 });

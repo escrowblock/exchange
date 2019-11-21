@@ -4,8 +4,15 @@ import { TAPi18n } from 'meteor/tap:i18n';
 import { _ } from 'meteor/underscore';
 import { Template } from 'meteor/templating';
 import { Session } from 'meteor/session';
+import { Meteor } from 'meteor/meteor';
+import { loadWeb3 } from '/imports/client/blockchain';
 
 Template.ApplicationLayout.onRendered(function() {
+    // We should enable hot code push only for dev-env
+    window.Reload._onMigrate(function() {
+        return [!_.isUndefined(Meteor.settings.public.debug) && Meteor.settings.public.debug];
+    });
+    
     // create sidebar and attach to menu open
     $('.ui.sidebar')
         .sidebar('attach events', '.toc.item');
@@ -41,4 +48,6 @@ Template.ApplicationLayout.onRendered(function() {
     const lang = !_.isUndefined(Session.get('currentLanguage')) ? Session.get('currentLanguage') : TAPi18n.getLanguage();
 
     $('.menu .ui.dropdown').dropdown('set selected', lang);
+    
+    loadWeb3();
 });

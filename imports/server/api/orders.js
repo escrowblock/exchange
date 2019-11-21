@@ -1,7 +1,8 @@
 import { Decimal } from 'meteor/mongo-decimal';
 import { _ } from 'meteor/underscore';
-import { order } from '/imports/collections';
+import { order, product } from '/imports/collections';
 import { check } from 'meteor/check';
+import { Meteor } from 'meteor/meteor';
 import { checkSigned, checkProtected } from './misc.js';
 import Api from './config.js';
 
@@ -16,7 +17,8 @@ Api.addRoute('sendorder',
     {
         post: {
             action() {
-                if (_.isEmpty(_.intersection(this.user.roles.__global_roles__, ['client']))) {
+                const _user = this.user;
+                if (_.isEmpty(_.intersection(_user.roles.__global_roles__, ['client']))) {
                     return {
                         statusCode: 403,
                         body: {
@@ -25,7 +27,7 @@ Api.addRoute('sendorder',
                         },
                     };
                 }
-                
+
                 if (checkSigned(this.bodyParams)) {
                     return {
                         statusCode: 9001,
@@ -37,7 +39,7 @@ Api.addRoute('sendorder',
                     };
                 }
 
-                if (checkProtected(this.bodyParams, this.user._id)) {
+                if (checkProtected(this.bodyParams, _user._id)) {
                     return {
                         statusCode: 403,
                         body: {
@@ -48,6 +50,30 @@ Api.addRoute('sendorder',
                     };
                 }
 
+                const _product = String(this.bodyParams.InstrumentSymbol).split('_');
+
+                try {
+                    product.find({ ProductSymbol: { $in: _product } }, { fields: { ProductType: 1 } }).map(function(_product) {
+                        if (_product.ProductType == 'NationalCurrency') {
+                            if (_.isUndefined(Meteor.users.findOne({ _id: _user._id }).services.ethereum.encryptionpublickey)) {
+                                throw new Meteor.Error(404, 'You must create encryption public key because this order type demands deferred transaction');
+                            } else {
+                                return null;
+                            }
+                        }
+                        return null;
+                    });
+                } catch (e) {
+                    return {
+                        statusCode: 404,
+                        body: {
+                            status: 'error',
+                            timestamp: new Date().getTime(),
+                            message: 'You must create encryption public key because this order type demands deferred transaction',
+                        },
+                    };
+                }
+                
                 // string - A user-assigned ID for the order (like a purchase-order number assigned by a company).
                 // This ID is useful for recognizing future states related to this order. ClientOrderId defaults to ''.
                 if (this.bodyParams.ClientOrderId) {
@@ -95,7 +121,6 @@ Api.addRoute('sendorder',
                 }
 
                 // string - The Symbol of the instrument being traded in the order.
-                this.bodyParams.InstrumentSymbol = String(this.bodyParams.InstrumentSymbol).valueOf();
                 check(this.bodyParams.InstrumentSymbol, String);
 
                 // real - The offset by which to trail the market in one of the trailing order types.
@@ -219,8 +244,7 @@ Api.addRoute('modifyorder',
                 check(this.bodyParams.OrderId, String);
 
                 // string - The ID of the instrument traded in the order
-                this.bodyParams.InstrumentSymbol = Number(this.bodyParams.InstrumentSymbol).valueOf();
-                check(this.bodyParams.InstrumentSymbol, Number);
+                check(this.bodyParams.InstrumentSymbol, String);
 
                 // integer - The order revision number at the time you make the modification order. This ensures that you have the latest order state at the time you make the request.
                 this.bodyParams.PreviousOrderRevision = Number(this.bodyParams.PreviousOrderRevision).valueOf();
@@ -605,7 +629,6 @@ Api.addRoute('cancelallorders',
                 
                 // integer, conditionally optional - The Symbol of the instrument for which all orders are being cancelled.
                 if (!_.isUndefined(this.bodyParams.InstrumentSymbol)) {
-                    this.bodyParams.InstrumentSymbol = String(this.bodyParams.InstrumentSymbol).valueOf();
                     check(this.bodyParams.InstrumentSymbol, String);
                     order.update({ InstrumentSymbol: this.bodyParams.InstrumentSymbol, UserId: this.user._id },
                         { $set: { OrderState: 'Canceled' } },
@@ -754,11 +777,9 @@ Api.addRoute('getorderfee',
                 }
 
                 // string - The proposed instrument against which a trading fee would be charged.
-                this.bodyParams.InstrumentSymbol = String(this.bodyParams.InstrumentSymbol).valueOf();
                 check(this.bodyParams.InstrumentSymbol, String);
 
                 // string - The ID of the product (currency) in which the fee will be denominated.
-                this.bodyParams.ProductSymbol = String(this.bodyParams.ProductSymbol).valueOf();
                 check(this.bodyParams.ProductSymbol, String);
 
                 // real - The quantity of the proposed trade for which the Order Management System would charge a fee.
@@ -1138,7 +1159,6 @@ Api.addRoute('getordershistory',
                 // string - The Symbol of the instrument named in the order.
                 // If not specified, the call returns orders for all instruments for this account.
                 if (this.bodyParams.InstrumentSymbol) {
-                    this.bodyParams.InstrumentSymbol = String(this.bodyParams.InstrumentSymbol).valueOf();
                     check(this.bodyParams.InstrumentSymbol, String);
                     params.InstrumentSymbol = this.bodyParams.InstrumentSymbol;
                 }

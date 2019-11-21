@@ -31,25 +31,45 @@ Template.Trade.events({
         && String(event.key).search(/\d/) == -1 && String(event.key).search(/\./) == -1)
         || (String(event.key).search(/\./) != -1 && $(event.currentTarget).val().indexOf('.') != -1)
         || (String(event.key).search(/\./) != -1 && $(event.currentTarget).val() == '')
-        || !Number($(event.currentTarget).val()).valueOf()
+        || (String(event.key).search(/\d|\./) == -1 && _.indexOf(['Delete', 'ArrowLeft', 'ArrowRight', 'Backspace', 'Delete'], String(event.key).toString()) == -1)
         ) {
             event.preventDefault();
         }
     },
     'keyup .ui.form input[name="LimitPrice"]': (event) => {
         const formEl = $(event.currentTarget).closest('.ui.form');
-        let _limitPrice = $(formEl).find('input[name="LimitPrice"]').val();
-        _limitPrice = _limitPrice || 1;
+        let _quantity = $(formEl).find('input[name="Quantity"]').val();
+        try {
+            _quantity = Decimal(_quantity) || Decimal(1);
+        } catch (error) {
+            _quantity = Decimal(1);
+        }
+        let curVal = $(event.currentTarget).val();
+        try {
+            curVal = Decimal(curVal) || Decimal(1);
+        } catch (error) {
+            curVal = Decimal(1);
+        }
         $(formEl).find('input[name="Total"]').val(
-            Decimal($(event.currentTarget).val()).times(Decimal(_limitPrice)).toString(),
+            curVal.times(_quantity).toString(),
         );
     },
     'keyup .ui.form input[name="Quantity"]': (event) => {
         const formEl = $(event.currentTarget).closest('.ui.form');
         let _limitPrice = $(formEl).find('input[name="LimitPrice"]').val();
-        _limitPrice = _limitPrice || 1;
+        try {
+            _limitPrice = Decimal(_limitPrice) || Decimal(1);
+        } catch (error) {
+            _limitPrice = Decimal(1);
+        }
+        let curVal = $(event.currentTarget).val();
+        try {
+            curVal = Decimal(curVal) || Decimal(1);
+        } catch (error) {
+            curVal = Decimal(1);
+        }
         $(formEl).find('input[name="Total"]').val(
-            Decimal($(event.currentTarget).val()).times(Decimal(_limitPrice)).toString(),
+            curVal.times(_limitPrice).toString(),
         );
     },
     'click .traderow': (event) => {
@@ -77,7 +97,7 @@ Template.Trade.events({
     },
     'click .button-buy': () => {
         if (Meteor.userId() == null) {
-            modalAlert(TAPi18n.__('Oops, something happened'), TAPi18n.__('You must be logged in to place order.'));
+            modalAlert(TAPi18n.__('Oops, something happened'), TAPi18n.__('You must be logged in to place order_'));
             return false;
         }
         const form = $('.OrderWrapper .tab.active .ui.form.buy');
@@ -110,7 +130,7 @@ Template.Trade.events({
             return false;
         }
         // Prevent sending field for visual estimation
-        delete order.total;
+        delete order.Total;
         if (error) {
             form.removeClass('loading');
             modalAlert(TAPi18n.__('Oops, something happened'), TAPi18n.__('You need to fill all fields for this order'));
@@ -126,9 +146,38 @@ Template.Trade.events({
                     Meteor.call('addOrder', order, (error) => {
                         form.removeClass('loading');
                         if (error) {
-                            modalAlert(TAPi18n.__('Oops, something happened'), TAPi18n.__(error.message));
+                            if (error.error !== 404) {
+                                modalAlert(TAPi18n.__('Oops, something happened'), TAPi18n.__(error.reason));
+                            } else {
+                                if (Session.get('walletWay') == 'metamask') {
+                                    modalAlert(TAPi18n.__('Action required'), TAPi18n.__(error.reason));
+                                }
+                                window.web3.currentProvider.sendAsync({
+                                    jsonrpc: '2.0',
+                                    method: 'encryption_public_key',
+                                    params: [window.web3.eth.defaultAccount],
+                                    from: window.web3.eth.defaultAccount,
+                                }, function(error, encryptionpublickey) {
+                                    if (!error) {
+                                        Meteor.call('setEncryptionPublicKey', encryptionpublickey.result, function (error) {
+                                            if (error) {
+                                                modalAlert(TAPi18n.__('Oops, something happened'), TAPi18n.__(error.reason));
+                                            }
+                                            Meteor.call('addOrder', order, (error) => {
+                                                if (error) {
+                                                    modalAlert(TAPi18n.__('Oops, something happened'), TAPi18n.__(error.reason));
+                                                }
+                                                modalAlert(TAPi18n.__('Success'), TAPi18n.__('Your order is placed_'), 1000);
+                                            });
+                                            form.find('input[type!="hidden"]').each(function() {
+                                                $(this).val('');
+                                            });
+                                        });
+                                    }
+                                });
+                            }
                         } else {
-                            modalAlert(TAPi18n.__('Success'), TAPi18n.__('Your order is placed.'), 1000);
+                            modalAlert(TAPi18n.__('Success'), TAPi18n.__('Your order is placed_'), 1000);
                             form.find('input[type!="hidden"]').each(function() {
                                 $(this).val('');
                             });
@@ -148,7 +197,7 @@ Template.Trade.events({
     },
     'click .button-sell': () => {
         if (Meteor.userId() == null) {
-            modalAlert(TAPi18n.__('Oops, something happened'), TAPi18n.__('You must be logged in to place order.'));
+            modalAlert(TAPi18n.__('Oops, something happened'), TAPi18n.__('You must be logged in to place order_'));
             return false;
         }
         const form = $('.OrderWrapper .tab.active .ui.form.sell');
@@ -170,7 +219,7 @@ Template.Trade.events({
             return false;
         }
         // Prevent sending field for visual estimation
-        delete order.total;
+        delete order.Total;
         if (error) {
             form.removeClass('loading');
             modalAlert(TAPi18n.__('Oops, something happened'), TAPi18n.__('You need to fill all fields for this order'));
@@ -186,9 +235,38 @@ Template.Trade.events({
                     Meteor.call('addOrder', order, (error) => {
                         form.removeClass('loading');
                         if (error) {
-                            modalAlert(TAPi18n.__('Oops, something happened'), TAPi18n.__(error.message));
+                            if (error.error !== 404) {
+                                modalAlert(TAPi18n.__('Oops, something happened'), TAPi18n.__(error.reason));
+                            } else {
+                                if (Session.get('walletWay') == 'metamask') {
+                                    modalAlert(TAPi18n.__('Action required'), TAPi18n.__(error.reason));
+                                }
+                                window.web3.currentProvider.sendAsync({
+                                    jsonrpc: '2.0',
+                                    method: 'encryption_public_key',
+                                    params: [window.web3.eth.defaultAccount],
+                                    from: window.web3.eth.defaultAccount,
+                                }, function(error, encryptionpublickey) {
+                                    if (!error) {
+                                        Meteor.call('setEncryptionPublicKey', encryptionpublickey.result, function (error) {
+                                            if (error) {
+                                                modalAlert(TAPi18n.__('Oops, something happened'), TAPi18n.__(error.reason));
+                                            }
+                                            Meteor.call('addOrder', order, (error) => {
+                                                if (error) {
+                                                    modalAlert(TAPi18n.__('Oops, something happened'), TAPi18n.__(error.reason));
+                                                }
+                                                modalAlert(TAPi18n.__('Success'), TAPi18n.__('Your order is placed_'), 1000);
+                                            });
+                                            form.find('input[type!="hidden"]').each(function() {
+                                                $(this).val('');
+                                            });
+                                        });
+                                    }
+                                });
+                            }
                         } else {
-                            modalAlert(TAPi18n.__('Success'), TAPi18n.__('Your order is placed.'), 1000);
+                            modalAlert(TAPi18n.__('Success'), TAPi18n.__('Your order is placed_'), 1000);
                             form.find('input[type!="hidden"]').each(function() {
                                 $(this).val('');
                             });
@@ -199,21 +277,35 @@ Template.Trade.events({
         return false;
     },
     'click .button-edit-order': (event) => {
-        const OrderID = $(event.target).attr('data');
+        let target;
+        if (!$(event.target).hasClass('button-cancel-order')) {
+            target = $(event.target).closest('.button-cancel-order');
+        } else {
+            target = $(event.target);
+        }
+        const OrderID = $(target).attr('data');
         if (OrderID) {
             const instanceOrder = order.findOne({ _id: OrderID });
             modalAlert(TAPi18n.__('Editing order'), instanceOrder.Quantity);
         }
     },
     'click .button-cancel-order': (event) => {
-        const OrderID = $(event.target).attr('data');
+        let target;
+        if (!$(event.target).hasClass('button-cancel-order')) {
+            target = $(event.target).closest('.button-cancel-order');
+        } else {
+            target = $(event.target);
+        }
+        target.addClass('loading');
+        const OrderID = $(target).attr('data');
         if (OrderID) {
             modalConfirmation(TAPi18n.__('Deleting order'), TAPi18n.__('Do you really want to delete this order?'),
                 () => {
-                    // just fail, don't do anything
+                    target.removeClass('loading');
                 },
                 () => {
                     Meteor.call('cancelOrder', OrderID, function(error) {
+                        target.removeClass('loading');
                         if (!error) {
                             const { limitOrder } = Meteor.settings.public;
                             const page = Session.get('MyOpenOrdersPage') ? Session.get('MyOpenOrdersPage') : 0;
@@ -226,13 +318,16 @@ Template.Trade.events({
                 });
         }
     },
-    'click #cancelSell': () => {
+    'click #cancelSell': (event) => {
+        const button = $(event.target);
+        button.addClass('loading');
         modalConfirmation(TAPi18n.__('Cancel all sell orders'), TAPi18n.__('Do you really want to cancel all sell orders?'),
             () => {
-                // just fail, don't do anything
+                button.removeClass('loading');
             },
             () => {
                 Meteor.call('cancelOrderSell', function(error) {
+                    button.removeClass('loading');
                     if (!error) {
                         const { limitOrder } = Meteor.settings.public;
                         const page = Session.get('MyOpenOrdersPage') ? Session.get('MyOpenOrdersPage') : 0;
@@ -244,13 +339,16 @@ Template.Trade.events({
                 });
             });
     },
-    'click #cancelBuy': () => {
+    'click #cancelBuy': (event) => {
+        const button = $(event.target);
+        button.addClass('loading');
         modalConfirmation(TAPi18n.__('Cancel all buy orders'), TAPi18n.__('Do you really want to cancel all buy orders?'),
             () => {
-                // just fail, don't do anything
+                button.removeClass('loading');
             },
             () => {
                 Meteor.call('cancelOrderBuy', function(error) {
+                    button.removeClass('loading');
                     if (!error) {
                         const { limitOrder } = Meteor.settings.public;
                         const page = Session.get('MyOpenOrdersPage') ? Session.get('MyOpenOrdersPage') : 0;
@@ -262,13 +360,16 @@ Template.Trade.events({
                 });
             });
     },
-    'click #cancelAll': () => {
+    'click #cancelAll': (event) => {
+        const button = $(event.target);
+        button.addClass('loading');
         modalConfirmation(TAPi18n.__('Cancel all orders'), TAPi18n.__('Do you really want to cancel all orders?'),
             () => {
-                // just fail, don't do anything
+                button.removeClass('loading');
             },
             () => {
                 Meteor.call('cancelOrderAll', function(error) {
+                    button.removeClass('loading');
                     if (!error) {
                         const { limitOrder } = Meteor.settings.public;
                         const page = Session.get('MyOpenOrdersPage') ? Session.get('MyOpenOrdersPage') : 0;

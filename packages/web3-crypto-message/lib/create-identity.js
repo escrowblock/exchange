@@ -1,9 +1,7 @@
-
-import { fromPrivate } from 'eth-lib/lib/account';
 import { keccak256 } from 'eth-lib/lib/hash';
 import Bytes from 'eth-lib/lib/bytes';
-import publicKeyByPrivateKey from './public-key-by-private-key';
-
+import sigUtil from 'eth-sig-util';
+import { removeTrailing0x } from './util';
 const MIN_ENTROPY_SIZE = 128;
 
 /**
@@ -33,7 +31,8 @@ export function createPrivateKey(entropy) {
  */
 export default function createIdentity(entropy) {
     const privateKey = createPrivateKey(entropy);
-    const identity = fromPrivate(privateKey);
-    identity.publicKey = publicKeyByPrivateKey(identity.privateKey);
+    const identity = {privateKey: removeTrailing0x(privateKey)};
+
+    identity.publicKey = sigUtil.getEncryptionPublicKey(identity.privateKey);
     return identity;
 }

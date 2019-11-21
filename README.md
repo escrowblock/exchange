@@ -42,6 +42,7 @@ To quickly launch a developer environment, you need to configure:
 - Copy the .deployx_example folder to .deployx
 - Go to /.deployx/localdevelopment
 - Open file settings.json
+- Install Redis
 - Change settings for which "add me please" is specified ("appName" - firebase setting for PUSH notifications, 
 "infura_token" - token from dashboard on infura.io, "HMW" - official address for Escrowblock Hierarchy of multisign wallets,
 "senderID" - firebase setting for PUSH notifications, "contactmail" - email for support, "noreplymail" - email for sending, 
@@ -92,6 +93,12 @@ All based on queue with two operations:
 2) Recalculate Algo orders
 Getting into the order queue provides [matb33:collection-hooks](https://github.com/matb33/meteor-collection-hooks)
 The queue is processed asynchronously through triggers at the `order` MongoDb collection.
+For rapidly performance uses `redis` by `https://github.com/cult-of-coders/redis-oplog`.
+To launch Redis for development aim you can use:
+
+```sh
+docker run --name escb-redis -d -e REDIS_PASSWORD=foobar redis sh -c 'exec redis-server --requirepass "$REDIS_PASSWORD"'
+```
 
 ## Web3 crypto messaging
 

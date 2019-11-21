@@ -18,9 +18,8 @@ global.describe('Orders API', function () {
     this.timeout(10000);
   
     let userTaker; let userMaker; let userMaker_Api;
-    // let userTaker_Api; let authTokenTaker; let userIdTaker;
-    let authTokenMaker; let
-        userIdMaker;
+    let userTaker_Api; let authTokenTaker; let userIdTaker;
+    let authTokenMaker; let userIdMaker;
   
     global.beforeEach(function(done) {
         resetDatabase({ excludedCollections: ['roles'] }, function() {
@@ -44,6 +43,7 @@ global.describe('Orders API', function () {
                     id: '0x7abCaC5b70eBB22Aa05c7412058752C2BDB48865',
                     signature: '0x9127cd6beb3dcf6789842d2a820fd588aca8d8db4b19bf08d6fcc06efa17d99b5d24e3ca063d766295fbcb7062b4d5ca03c8dd6fb99e787636f43bf96d5b66251b',
                     publickey: 'c9b45b3481bdc48d8ddb09f5f47f513c38993ad2731b60efa2d8f89f802d6e37134e68608041eebda9fdad8be96cd03183201ac0eebaacb20865aef5a8a2b9bd',
+                    // encryptionpublickey: 'nFxp+ZRkfG3FRJOAp1TM46REHqXHBgyloazLNe+J+XE='
                 },
                 {});
       
@@ -56,6 +56,7 @@ global.describe('Orders API', function () {
                     id: '0xf593ca6A1D5013298F7dE87AF4386A807C02F7e8',
                     signature: '0x4d6d5047b1be60f4d158be8c6e2e5022ad3ea02b7c6f083338c53e86109a11c1335d58480b66707270c13fdef7c0479a44ba2fe224f5c078574307b01229ee361b',
                     publickey: 'dd036f14b0198dae36381242e1b47d249909446699d79bf1a478e7efe274c8caa54584ff908beb900e317b7ac535941815fd605816c33a8bbcca7f027058508b',
+                    encryptionpublickey: 'fLCuEBf7FMygt2/lGHFyk4+/vEhjoE4ouZOsQZt+OXQ=',
                 },
                 {});
       
@@ -64,7 +65,6 @@ global.describe('Orders API', function () {
             });
       
             setTimeout(Meteor.bindEnvironment(() => {
-                /*
                 userTaker_Api = api_key.findOne({ UserId: userTaker.userId });
           
                 const hmacTaker = crypto.createHmac('sha256', userTaker_Api.Secret); // use your Secret
@@ -89,7 +89,7 @@ global.describe('Orders API', function () {
                 } catch (e) {
                     throw Meteor.Error('');
                 }
-                */
+
                 userMaker_Api = api_key.findOne({ UserId: userMaker.userId });
           
                 const hmacMaker = crypto.createHmac('sha256', userMaker_Api.Secret); // use your Secret
@@ -173,6 +173,62 @@ global.describe('Orders API', function () {
             try {
                 const _order = order.findOne({ _id: OrderId });
                 chai.assert.equal(_.isUndefined(_order), false, 'Api created order');
+                done();
+            } catch (e) {
+                done(e);
+            }
+        }), 5000);
+    });
+    
+    global.it('send with signature deferred order without encryption key', function (done) {
+        this.timeout(11000);
+        
+        const dataObj = {
+            Quantity: '0.00012345656',
+            LimitPrice: '300.00000001',
+            OrderType: 'Limit',
+            InstrumentSymbol: 'ESCB_USD',
+            Side: 'Buy',
+            recvWindow: '5000',
+            timestamp: new Date().getTime(),
+        };
+
+        const dataObjPlain = [];
+        const entries = Object.entries(dataObj);
+        for (let i = 0; i < entries.length; i += 1) {
+            const [key, value] = entries[i];
+            dataObjPlain.push(`${key}=${value}`);
+        }
+        
+        const hmacSignature = crypto.createHmac('sha256', userTaker_Api.Secret); // use your Secret
+        hmacSignature.update(dataObjPlain.join('&')); // signature
+
+        dataObj.signature = hmacSignature.digest('hex');
+
+        let message;
+        
+        new Promise((resolve) => {
+            HTTP.post('http://localhost:3000/api/v1/sendorder',
+                {
+                    headers: {
+                        'X-API-Authorization': userTaker_Api.Key,
+                        'X-Auth-Token': authTokenTaker,
+                        'X-User-Id': userIdTaker,
+                    },
+                    params: dataObj,
+                    timeout: 10000,
+                },
+                Meteor.bindEnvironment(function(e, res) {
+                    if (e && res.statusCode == 404 && res.data) {
+                        ({ message } = res.data);
+                    }
+                    resolve();
+                }));
+        }).await();
+            
+        setTimeout(Meteor.bindEnvironment(() => {
+            try {
+                chai.assert.equal(message, 'You must create encryption public key because this order type demands deferred transaction', 'Error with deffered order');
                 done();
             } catch (e) {
                 done(e);

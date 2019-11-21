@@ -9,6 +9,28 @@ import { moment } from 'meteor/momentjs:moment';
 import { profile } from '/imports/collections';
 import { AutoForm } from 'meteor/aldeed:autoform';
 
+/* eslint-disable */ 
+const PlainDict = (function() {
+    function PlainDict() {
+        this.items = {};
+    }
+
+    PlainDict.prototype.set = function(name, item) {
+        this.items[name] = item;
+    };
+
+    PlainDict.prototype.get = function(name) {
+        if (!_.isUndefined(this.items[name])) {
+            return this.items[name];
+        }
+        return null;
+    };
+    return PlainDict;
+}());
+/* eslint-enable */
+
+window.globalDict = new PlainDict();
+
 Template.div.onRendered(function() {
     $(this.firstNode).get(0).className = this.data.class;
 });

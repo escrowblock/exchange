@@ -1,8 +1,11 @@
-import { encryptMessage } from '/imports/cryptoTalkTools';
+import { encryptMessage, decryptMessage } from '/imports/cryptoTalkTools';
+import cryptoMsg from 'meteor/escb:web3-crypto-message';
 import { modalAlert, modalConfirmation } from '/imports/modal';
 import { TAPi18n } from 'meteor/tap:i18n';
 import { user_files, talk, trade } from '/imports/collections';
 import { $ } from 'meteor/jquery';
+import { saveAs } from 'file-saver';
+import pako from 'pako';
 import { _ } from 'meteor/underscore';
 import { loadWeb3, signature } from '/imports/client/blockchain';
 import { Router } from 'meteor/iron:router';
@@ -10,12 +13,9 @@ import { Template } from 'meteor/templating';
 import { Meteor } from 'meteor/meteor';
 import { EJSON } from 'meteor/ejson';
 import { Session } from 'meteor/session';
-import { Tracker } from 'meteor/tracker';
-   
+import { ReactiveVar } from 'meteor/reactive-var';
+
 Template.Talk.events({
-    'click #loadHistory'() {
-        $('.page-content').trigger('refresh');
-    },
     'click #attachFileToTalk'() {
         $('#fileInput')[0].click();
     },
@@ -24,6 +24,36 @@ Template.Talk.events({
     },
     'touchmove #attachFileToTalk'() {
         $('#fileInput')[0].click();
+    },
+    'click .ipfs'(event) {
+        const target = $(event.currentTarget);
+        target.find('.icon').addClass('loading');
+        try {
+            window.fetch(target.attr('href')).then(response => response.text()).then((data) => {
+                const source = decryptMessage(data, Session.get(`channelIdentity${$('#talk_id').val()}`));
+                const result = pako.inflate(Buffer.from(source, 'hex'));
+                
+                let content_type = target.attr('data-type');
+                switch (content_type) {
+                case 'text/plain':
+                case 'text/html':
+                    content_type = `${content_type}; charset=utf-8`;
+                    break;
+                default:
+                    break;
+                }
+
+                const file = new window.File([result], target.attr('data-name'), { type: content_type });
+                saveAs(file);
+                
+                target.find('.icon').removeClass('loading');
+            }).reject(() => {
+                target.find('.icon').removeClass('loading');
+            });
+        } catch (e) {
+            target.find('.icon').removeClass('loading');
+        }
+        return false;
     },
     'keyup textarea'(event) {
         const textarea = event.currentTarget;
@@ -40,17 +70,17 @@ Template.Talk.events({
     },
     'click #sendMessage'() {
         const message = $('#bodyMessage').val();
-        const userFiles = Session.get('userFiles');
+        const uploadFiles = Session.get('userFiles');
         let message_files = [];
         if (message.length > Template.instance().maxCounter) {
-            modalAlert(TAPi18n.__('Oops'), TAPi18n.__('You should type a message not more than %s chars.', Template.instance().maxCounter));
+            modalAlert(TAPi18n.__('Oops'), TAPi18n.__('You should type a message not more than %s chars_', Template.instance().maxCounter));
             return false;
         }
-        if (message || (!_.isUndefined(userFiles) && userFiles.length)) {
+        if (message || (!_.isUndefined(uploadFiles) && uploadFiles.length)) {
             $('#bodyMessage').val('');
             $('#bodyMessageCounter').text(`0/${Template.instance().maxCounter}`);
-            if (!_.isUndefined(userFiles)) {
-                message_files = _.map(userFiles, function(obj) {
+            if (!_.isUndefined(uploadFiles)) {
+                message_files = _.map(uploadFiles, function(obj) {
                     const schema_object = {};
                     schema_object.Name = obj.name;
                     schema_object.Extension = obj.extension;
@@ -61,48 +91,26 @@ Template.Talk.events({
                     return schema_object;
                 });
             }
-
-            const identity = talk.findOne({ _id: $('#talk_id').val() }).Identity;
-            let channelIdentity;
             
-            const values = Object.values(identity);
-            for (let i = 0; i < values.length; i += 1) {
-                if (values[i].UserId == Meteor.userId()) { // @TODO after Metamask will add decrypt implementation
-    
+            const encryptedMessage = message ? encryptMessage(message, Session.get(`channelIdentity${$('#talk_id').val()}`)) : '';
+            
+            const _message_object = { Message: encryptedMessage, Files: message_files, TalkId: $('#talk_id').val() };
+            
+            $('#sendMessageForm').addClass('loading');
+            Meteor.call('sendMessageToTalk', _message_object, Session.get('currentInstance'), function(error) {
+                $('#sendMessageForm').removeClass('loading');
+                if (error) {
+                    console.log(error);
                 }
-                if (values[i].UserId == 'Plain') {
-                    channelIdentity = EJSON.parse(values[i].Body);
-                }
-            }
-
-            encryptMessage(message, channelIdentity).then((encryptedMessage) => {
-                const _message_object = { Message: encryptedMessage, Files: message_files, TalkId: $('#talk_id').val() };
-                Meteor.call('sendMessageToTalk', _message_object, Session.get('currentInstance'), function(error) {
-                    if (error) {
-                        console.log(error);
-                    }
-                    const height = $('.talks .ui.feed').outerHeight();
-                    $('.talks').stop().animate({ scrollTop: height }, '500', 'swing');
-                    Session.set('userFiles', []);
-                });
+                const height = $('.talks .ui.feed').outerHeight();
+                $('.talks').stop().animate({ scrollTop: height }, '500', 'swing');
+                window.globalDict.set('uploadFiles', new ReactiveVar([]));
+                Session.set('userFiles', []);
             });
         } else {
-            modalAlert(TAPi18n.__('Oops'), TAPi18n.__('You should type a message or attach a file.'));
+            modalAlert(TAPi18n.__('Oops'), TAPi18n.__('You should type a message or attach a file_'));
         }
         return false;
-    },
-    refresh() {
-        const message_count = $('#message_count').val();
-        Tracker.autorun(function () {
-            const _talk_subscribe = Meteor.subscribe('TalkHistory', $('#talk_id').val(), parseInt(message_count, 10) + 50);
-            Session.set('loadingHistory', true);
-            if (_talk_subscribe.ready()) {
-                setTimeout(function() {
-                    Session.set('loadingHistory', false);
-                }, 500);
-                $('#message_count').val(parseInt(message_count, 10) + 50);
-            }
-        });
     },
     'click #confirmTrade'(event) {
         modalConfirmation(TAPi18n.__('Trade confirmation'), TAPi18n.__('TRADE_CONFIRMATION_DESC'),
@@ -149,14 +157,30 @@ Template.Talk.events({
             },
             function() {
                 const _elem = $(event.currentTarget);
+                const _talkId = $('#talk_id').val();
                 _elem.attr('disabled', 'disabled').addClass('loading');
-                Meteor.call('callArbitration', $('#talk_id').val(), function(error) {
-                    _elem.removeAttr('disabled').removeClass('loading');
+
+                Meteor.call('getEncryptionPublicKeyArbitration', _talkId, function(error, result) {
                     if (error) {
+                        _elem.removeAttr('disabled').removeClass('loading');
                         modalAlert(TAPi18n.__('Oops'), TAPi18n.__(error.reason));
                         return false;
                     }
-                    modalAlert(TAPi18n.__('Your request has been sent'), TAPi18n.__('After this moment the trade is in the disputed status'));
+                    const channelIdentity = Session.get(`channelIdentity${_talkId}`);
+                    const EncryptedMessageForArbitration = cryptoMsg.encryptWithPublicKey(
+                        result.EncryptionPublicKey,
+                        EJSON.stringify(channelIdentity),
+                    );
+
+                    Meteor.call('callArbitration', _talkId, result.ArbitrationUserId, EncryptedMessageForArbitration, function(error) {
+                        _elem.removeAttr('disabled').removeClass('loading');
+                        if (error) {
+                            modalAlert(TAPi18n.__('Oops'), TAPi18n.__(error.reason));
+                            return false;
+                        }
+                        modalAlert(TAPi18n.__('Your request has been sent'), TAPi18n.__('After this moment the trade is in the disputed status'));
+                        return null;
+                    });
                     return null;
                 });
             });
@@ -168,7 +192,7 @@ Template.Talk.events({
         <div class="ui ignored red message">
           <i class="icon info"></i>
           <b>${TAPi18n.__('Important')}</b>:
-          ${TAPi18n.__("It is SANDBOX mode, this feature doesn't work in this mode in fully.")}
+          ${TAPi18n.__("It is SANDBOX mode, this feature doesn't work in this mode in fully_")}
         </div>`;
         }
         const _talkId = $('#talk_id').val();
@@ -198,7 +222,7 @@ Template.Talk.events({
         </div>
         <div class="header">${TAPi18n.__('Do you really want to resolve this arbitration?')}</div>
         <div class="field">
-          <label>${TAPi18n.__('%s approved amount. Maximum is %s %s', { sprintf: [productSymbol, maxAmount, productSymbol] })}</label>
+          <label>${TAPi18n.__('%s approved amount_ Maximum is %s %s', { sprintf: [productSymbol, maxAmount, productSymbol] })}</label>
           <div class="ui action input">
             <input type="text" data-symbol="${productSymbol}" class="decimal" id="approvedAmount"/>
             <button id="allAmount" onClick="$('#approvedAmount').val('${maxAmount}');" data-symbol="${productSymbol}" class="ui blue button">
@@ -212,7 +236,7 @@ Template.Talk.events({
         <b>${TAPi18n.__('Please note')}</b>:
         <ul>
           <li>${TAPi18n.__('APPROVED_AMOUNT_ESCROW')}</li>
-          <li>${TAPi18n.__('You will sign your decision and will should to prove your logic if it will be required.')}</li>
+          <li>${TAPi18n.__('You will sign your decision and will should to prove your logic if it will be required_')}</li>
         </ul>
       </div>
     </div>`,

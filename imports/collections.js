@@ -3,10 +3,8 @@ import { FilesCollection } from 'meteor/ostrio:files';
 import { _ } from 'meteor/underscore';
 import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
-import { EJSON } from 'meteor/ejson';
 import fs from 'fs';
 import pako from 'pako';
-import { decryptMessage } from '/imports/cryptoTalkTools';
 import { SimpleSchema } from 'meteor/aldeed:simple-schema';
 import { Decimal } from 'meteor/mongo-decimal';
 
@@ -1026,6 +1024,36 @@ const order = new Mongo.Collection('order');
 
 order.attachSchema(schemas.order);
 
+const fee = new Mongo.Collection('fee');
+
+schemas.fee = new SimpleSchema({
+    UserId: {
+        type: String,
+        label: 'User ID',
+    },
+    FeeTaker: {
+        type: Decimal,
+        label: 'Fee Taker',
+    },
+    FeeMaker: {
+        type: Decimal,
+        label: 'Fee Maker',
+    },
+    Volume: {
+        type: Decimal,
+        label: 'Trade volume for 30 days',
+        optional: true,
+    },
+    UpdatedTime: {
+        type: Number,
+        label: 'Updated time',
+        optional: true,
+        autoValue() { if (!this.isSet && !this.isUpdate) { return new Date().getTime(); } return undefined; },
+    },
+});
+
+fee.attachSchema(schemas.fee);
+
 if (Meteor.isServer) {
     try {
         order.rawCollection().ensureIndex({ UserId: 1 });
@@ -1410,7 +1438,7 @@ schemas.talk_message = new SimpleSchema({
     Message: {
         type: String,
         label: 'Message',
-        max: 4000,
+        max: 40000,
         optional: true,
     },
     From: {
@@ -1478,12 +1506,11 @@ if (Meteor.isServer) {
         talk_message.rawCollection().ensureIndex({ TalkId: 1 });
         talk_message.rawCollection().ensureIndex({ From: 1 });
         talk_message.rawCollection().ensureIndex({ To: 1 });
-        talk_message.rawCollection().ensureIndex({ Created: 1 });
+        talk_message.rawCollection().ensureIndex({ CreatedAt: 1 });
     } catch (e) {
         // console.log(e);
     }
 }
-
 
 const user_files = new FilesCollection({
     debug: !_.isUndefined(Meteor.settings.public.debug) && Meteor.settings.public.debug,
@@ -1491,12 +1518,6 @@ const user_files = new FilesCollection({
     storagePath: 'private/files',
     allowClientCode: false, // Disallow remove files from Client
     onBeforeUpload(file) {
-    // @TODO need fix for 1.8.2 Meteor
-    /*
-    if (!file.userId) {
-      return 'Only authenticated user can upload file';
-    }
-    */
         // Allow upload files under 20MB, and only in several type of formats
         if (file.size <= 2 * 10485760 && /png|jpg|jpeg|pdf|txt|mp3|mp4/i.test(file.extension)) {
             return true;
@@ -1504,7 +1525,7 @@ const user_files = new FilesCollection({
         return 'Please upload files in format png, jpg, jpeg, pdf, txt with size equal or less than 20MB';
     },
     onAfterUpload(fileRef) {
-    // In the onAfterUpload callback, we will move the file to IPFS
+        // In the onAfterUpload callback, we will move the file to IPFS
         const self = this;
         _.each(fileRef.versions, async function(vRef, version) {
             // We use random instead of real file's _id
@@ -1542,20 +1563,6 @@ const user_files = new FilesCollection({
             }
         });
     },
-    /*
-  protected: function(fileRef) {
-      if (!this.userId && fileRef.meta.talkId) {
-        return false;
-      }
-      if (fileRef.meta.talkId) {
-        const _talk = talk.findOne({"_id": fileRef.meta.talkId, "$or": [{"ArbitrageId": this.userId},  {"UserId": this.userId}, {"CounterpartyId": this.userId}]});
-        if (_.isUndefined(_talk)) {
-          return false;
-        }
-      }
-      return true;
-  },
-  */
     interceptDownload(http, fileRef, version) {
         const pipeHash = fileRef.versions != null && fileRef.versions[version] != null && fileRef.versions[version].meta != null ? fileRef.versions[version].meta.pipeHash : null;
         if (pipeHash) {
@@ -1566,20 +1573,9 @@ const user_files = new FilesCollection({
                     http.response.end(null);
                     return true;
                 }
-                const identity = _talk.Identity;
-                let channelIdentity;
                 
-                const values = Object.values(identity);
-                for (let i = 0; i < values.length; i += 1) {
-                    if (values[i].UserId == Meteor.userId()) { // @TODO after Metamask will add decrypt implementation
-        
-                    }
-                    if (values[i].UserId == 'Plain') {
-                        channelIdentity = EJSON.parse(identity[i].Body);
-                    }
-                }
-                
-                global.ipfs.api.cat(pipeHash).then(file => decryptMessage(file.toString(), channelIdentity)).then((data) => {
+                global.ipfs.api.cat(pipeHash).then((file) => {
+                    const data = file.toString();
                     let content_type = fileRef.type;
                     switch (fileRef.type) {
                     case 'text/plain':
@@ -1641,12 +1637,18 @@ if (Meteor.isServer) {
 }
 
 /* eslint-disable */ 
-let myJobs;
+let MatchingEngineJobs;
 if (Meteor.isServer) {
-    myJobs = new JobCollection('MatchingEngine');
-    myJobs.startJobServer();
+    MatchingEngineJobs = new JobCollection('MatchingEngine');
+    if (Meteor.users.findOne({"emails.0.address": `${Meteor.settings.private.workerLogin}@fake.com`})) {
+        const workerId = Meteor.users.findOne({"emails.0.address": `${Meteor.settings.private.workerLogin}@fake.com`})._id;
+        MatchingEngineJobs.allow({
+          worker: [ workerId ]
+        });
+    }
+    MatchingEngineJobs.startJobServer();
 } else {
-    myJobs = {};
+    MatchingEngineJobs = {};
 }
 /* eslint-enable */
 
@@ -1657,5 +1659,6 @@ export {
     notification_history, notification_payload,
     node, variable, talk, talk_message, user_files,
     referral_program_agg, referral_program, api_key,
-    myJobs, AdminCollectionsCount, schemas,
+    fee, MatchingEngineJobs, AdminCollectionsCount,
+    schemas,
 };

@@ -2,6 +2,7 @@ import { $ } from 'meteor/jquery';
 import { _ } from 'meteor/underscore';
 import { Template } from 'meteor/templating';
 import { Meteor } from 'meteor/meteor';
+import { ReactiveVar } from 'meteor/reactive-var';
 import { Session } from 'meteor/session';
 
 Template.UploadForm.events({
@@ -14,6 +15,7 @@ Template.UploadForm.events({
     'submit form#uploadFile'(event, templateInstance) {
         event.preventDefault();
         templateInstance.error.set(false);
+        $('#attachFileToTalk').attr('disabled', 'disabled').addClass('loading');
         templateInstance.initiateUpload(event, event.currentTarget.fileInput.files, $('#talk_id').val());
         return false;
     },
@@ -40,31 +42,28 @@ Template.UploadForm.events({
         templateInstance.error.set(false);
         templateInstance.initiateUpload(event, files);
     },
-    'change .js-change-checkbox'(event) {
-        const request = this && this.data && this.data.data && this.data.data.request;
-        request.fileWorkOrderId = event.currentTarget.value;
-    },
-    'click .js-remove-file'(event) {
-        const request = this && this.data && this.data.data && this.data.data.request;
-        const fileWorkOrderId = $(event.currentTarget).data('id');
-
-        if (request && fileWorkOrderId === request.fileWorkOrderId) {
-            request.fileWorkOrderId = '';
+    'click .remove-file'(event, templateInstance) {
+        let target;
+        if (!$(event.target).hasClass('remove-file')) {
+            target = $(event.target).closest('.remove-file');
+        } else {
+            target = $(event.target);
         }
-
-        const handlerdeletefile = function(_id_file) {
-            const _userFiles = Session.get('upload_files');
-            let _reactive_userFiles = _userFiles.get();
-            _reactive_userFiles = _.filter(_reactive_userFiles, function(obj) { return obj._id != _id_file; });
-            _userFiles.set(_reactive_userFiles);
-  
-            Session.set('upload_files', _userFiles);
-            Session.set('userFiles', _reactive_userFiles);
-  
-            // Delete file from server
-            Meteor.call('deleteFile', _id_file);
-        };
-
-        handlerdeletefile(fileWorkOrderId);
+        
+        const fileId = target.data('id');
+        
+        let uploadFiles = window.globalDict.get('uploadFiles').get();
+        uploadFiles = _.filter(uploadFiles, function(obj) { return obj._id != fileId; });
+        window.globalDict.set('uploadFiles', new ReactiveVar(uploadFiles));
+        Session.set('userFiles', uploadFiles);
+        if (uploadFiles.length) {
+            window.globalDict.get('uploads', new ReactiveVar(uploadFiles));
+        } else {
+            window.globalDict.get('uploads', new ReactiveVar(false));
+            templateInstance.uploadQTY.set(0);
+        }
+        window.globalDict.set('uploads', new ReactiveVar(false));
+        // Delete file from server
+        Meteor.call('deleteFile', fileId);
     },
 });

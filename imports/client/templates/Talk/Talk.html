@@ -8,64 +8,67 @@
           </div>
           <div class="eight wide right aligned column">
             {{#if confirmButton}}
-              <div class="ui labeled icon button mini orange" id="confirmTrade">
+              <button class="ui labeled icon button mini orange" id="confirmTrade">
                 <i class="check square outline icon"></i>
                 {{_ "Confirm this trade"}}
-              </div>
+              </button>
             {{/if}}
             {{#if refuseButton}}
-              <div class="ui labeled icon button mini red" id="refuseTrade">
+              <button class="ui labeled icon button mini red" id="refuseTrade">
                 <i class="window close outline icon"></i>
                 {{_ "Refuse this trade"}}
-              </div>
+              </button>
             {{/if}}
             {{#if arbitrationButton}}
-              <div class="ui labeled icon button mini green" id="callArbitration">
+              <button class="ui labeled icon button mini green" id="callArbitration">
                 <i class="user outline icon"></i>
                 {{_ "Call for arbitration"}}
-              </div>
+              </button>
             {{/if}}
             {{#if resolveButton}}
-              <div class="ui labeled icon button mini red" id="resolveDispute">
+              <button class="ui labeled icon button mini red" id="resolveDispute">
                 <i class="clock outline icon"></i>
                 {{_ "Resolve this disput"}}
-              </div>
+              </button>
             {{/if}}
           </div>
         </div>
       </div>
-      <div class="scroll-pane">
-        <div class="ui feed">
-          {{#each Messages}}
-            <div class="event {{isAuthor}}" data-id="{{ _id }}">
-              <!-- {{#if isPrevData}} -->
-                <div class="label" title="{{isArbitration}}">
-                  <span class="identicon {{isArbitration}}" style="background-image: url('{{identiconData signature}}')"></span>
-                </div>
-              <!-- {{/if}} -->
-              <div class="content">
-                <div class="summary">
-                  {{UserName}}
-                  <!-- {{#if isPrevData}} -->
-                    <div class="date">{{puredate}}</div>
-                  <!-- {{/if}} -->
-                </div>
-                <div class="extra text">
-                  {{{decrypt _id Message}}}
-                </div>
-                <div class="extra images">
-                  {{{preparedFiles}}}
+      {{#if channelIdentity}}
+        <div class="scroll-pane">
+          <div class="ui feed">
+            {{#each Messages}}
+              <div class="event {{isAuthor}}" data-id="{{ _id }}">
+                <!-- {{#if isPrevData}} -->
+                  <div class="label" title="{{isArbitration}}">
+                    <span class="identicon {{isArbitration}}" style="background-image: url('{{identiconData signature}}')"></span>
+                  </div>
+                <!-- {{/if}} -->
+                <div class="content">
+                  <div class="summary">
+                    {{UserName}}
+                    <!-- {{#if isPrevData}} -->
+                      <div class="date">{{puredate}}</div>
+                    <!-- {{/if}} -->
+                  </div>
+                  <div class="extra text">
+                    {{{decrypt _id Message}}}
+                  </div>
+                  <div class="extra images">
+                    {{{preparedFiles}}}
+                  </div>
                 </div>
               </div>
-            </div>
-          {{/each}}
+            {{/each}}
+          </div>
         </div>
-      </div>
-      
+      {{else}}
+        <span> {{_ "Decryption process"}} </span>
+      {{/if}}
       <input type="hidden" id="talk_id" value="{{Talk._id}}"/>
       <input type="hidden" id="message_count" value="50"/>
         
-      <div class="ui form">
+      <div class="ui form" id="sendMessageForm">
         <textarea id="bodyMessage" rows="1" name="message" placeholder="{{_ "Type your message" }}"></textarea>
         <span id="bodyMessageCounter"> </span>
         <button id="attachFileToTalk" class="ui button mini orange">

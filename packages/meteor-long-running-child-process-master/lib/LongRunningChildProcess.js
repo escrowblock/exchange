@@ -1,13 +1,7 @@
-let assert; let child_process; let fs; let
-    path;
-
-fs = Npm.require('fs-extra');
-
-path = Npm.require('path');
-
-assert = Npm.require('assert');
-
-child_process = Npm.require('child_process');
+const fs = Npm.require('fs-extra');
+const path = Npm.require('path');
+const assert = Npm.require('assert');
+const child_process = Npm.require('child_process');
 
 LongRunningChildProcess = (function() {
     LongRunningChildProcess.prototype.taskName = null;
@@ -136,7 +130,7 @@ LongRunningChildProcess = (function() {
             command: String,
             args: [Match.Any],
             options: Match.Optional(Match.ObjectIncluding({
-                cwd: Match.Optional(Match.OneOf(String, void 0)),
+                cwd: Match.Optional(Match.OneOf(String, undefined)),
                 env: Match.Optional(Object),
                 stdio: Match.Optional(Match.OneOf(String, [Match.Any])),
             })),

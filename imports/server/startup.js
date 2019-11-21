@@ -206,6 +206,15 @@ Meteor.startup(() => {
 
     global.SyncedCron._collection.attachSchema(schemas.cronHistory);
     
+    // Add user as worker for remote job collection
+    if (Meteor.users.findOne({ 'emails.0.address': `${Meteor.settings.private.workerLogin}@fake.com` })) {
+        Accounts.createUser({
+            email: `${Meteor.settings.private.workerLogin}@fake.com`,
+            password: Meteor.settings.private.workerPassword,
+            profile: { name: Meteor.settings.private.workerLogin },
+        });
+    }
+    
     // Server hooks
     import '/imports/server/hooks.js';
     

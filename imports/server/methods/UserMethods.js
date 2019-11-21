@@ -1,6 +1,6 @@
 import sendNotification from '/imports/notifications';
 import {
-    profile, instrument, api_key, balance, transaction,
+    profile, instrument, api_key, balance, transaction, schemas,
 } from '/imports/collections';
 import { Random } from 'meteor/random';
 import { Decimal } from 'meteor/mongo-decimal';
@@ -34,7 +34,7 @@ Meteor.methods({
             throw new Meteor.Error(403, 'Please set up email address for enabling white list IP feature');
         }
     
-        check(doc.insertDoc, profile);
+        check(doc.insertDoc, schemas.profile);
         const old_profile = profile.findOne({ UserId: Meteor.userId() });
     
         if (old_profile && old_profile.UseOTP == true && doc.updateDoc.$set.UseOTP == false) {

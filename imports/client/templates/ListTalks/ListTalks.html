@@ -29,9 +29,6 @@
           {{_ "The last message at" }} {{{formatDate talk.CreatedAt}}}
         </div>
       </div>
-      <div class="extra text">
-        {{ talk.Message }}
-      </div>
       <div class="meta">
         <a href="{{pathFor 'Talk' _id=talk.TalkId}}" class="message">
           <i class="message icon"></i> {{_ "See all messages" }}

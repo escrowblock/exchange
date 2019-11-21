@@ -50,7 +50,7 @@ if (!_.isUndefined(Meteor.settings.public.sandbox) && Meteor.settings.public.san
         },
         job() {
             const flag = variable.findOne({ Name: 'fakeOrderSanboxStatus' }) ? variable.findOne({ Name: 'fakeOrderSanboxStatus' }).Value : 'free';
-            const count = variable.findOne({ Name: 'fakeOrderSanboxCount' }) ? variable.findOne({ Name: 'fakeOrderSanboxCount' }).Value : { count: 50, pause: 1000 };
+            const count = variable.findOne({ Name: 'fakeOrderSanboxCount' }) ? variable.findOne({ Name: 'fakeOrderSanboxCount' }).Value : { count: 10, pause: 1000 };
 
             const blocked = variable.findOne({ Name: 'fakeOrderSanboxBlocked' }) ? variable.findOne({ Name: 'fakeOrderSanboxBlocked' }).Value : false;
               
@@ -67,11 +67,11 @@ if (!_.isUndefined(Meteor.settings.public.sandbox) && Meteor.settings.public.san
                 _.each(_.range(count.count), async function() {
                     const InstrumentSymbol = availableInstruments[faker.random.number({ min: 0, max: availableInstruments.length - 1 })];
 
-                    const currentPrice = price_average.findOne({ InstrumentSymbol }) ? price_average.findOne({ InstrumentSymbol }).Price : Decimal('0');
+                    const currentPrice = price_average.findOne({ InstrumentSymbol }) ? price_average.findOne({ InstrumentSymbol }).Price : Decimal('10');
 
                     try {
                         const directionUp = faker.random.number({ min: 0, max: 100 }) > 50;
-                        const fakePrice = directionUp ? currentPrice.add(faker.random.number({ min: 0, max: 19.223 }) / 3) : currentPrice.sub(faker.random.number({ min: 0, max: 19.223 }) / 3);
+                        const fakePrice = directionUp ? currentPrice.add(faker.random.number({ min: 0.00001, max: currentPrice.toNumber() }) / 3) : currentPrice.sub(faker.random.number({ min: 0.00001, max: currentPrice.toNumber() }) / 3);
                         const _OrderType = faker.random.arrayElement(['Market', 'Limit', 'StopMarket', 'StopLimit', 'TrailingStopMarket', 'TrailingStopLimit']);
                         const _quantity = Decimal(+Number(faker.random.number({ min: 0.01, max: 99 }) / 3).toFixed(4));
                         const _side = faker.random.arrayElement(['Buy', 'Sell']);
@@ -79,10 +79,10 @@ if (!_.isUndefined(Meteor.settings.public.sandbox) && Meteor.settings.public.san
                         let fakeStopPrice;
                         switch (_side) {
                         case 'Buy':
-                            fakeStopPrice = directionUp ? fakePrice.sub(faker.random.number({ min: 0, max: 50 }) / 3) : fakePrice.add(faker.random.number({ min: 0, max: 50 }) / 3);
+                            fakeStopPrice = directionUp ? fakePrice.sub(faker.random.number({ min: 0, max: fakePrice.toNumber() }) / 3) : fakePrice.add(faker.random.number({ min: 0, max: fakePrice.toNumber() }) / 3);
                             break;
                         case 'Sell':
-                            fakeStopPrice = directionUp ? fakePrice.add(faker.random.number({ min: 0, max: 50 }) / 3) : fakePrice.sub(faker.random.number({ min: 0, max: 50 }) / 3);
+                            fakeStopPrice = directionUp ? fakePrice.add(faker.random.number({ min: 0, max: fakePrice.toNumber() }) / 3) : fakePrice.sub(faker.random.number({ min: 0, max: fakePrice.toNumber() }) / 3);
                             break;
                         default:
                             break;

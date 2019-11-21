@@ -66,6 +66,7 @@ global.describe('Balance crypto to fiat', function () {
                     id: '0x7abCaC5b70eBB22Aa05c7412058752C2BDB48865',
                     signature: '0x9127cd6beb3dcf6789842d2a820fd588aca8d8db4b19bf08d6fcc06efa17d99b5d24e3ca063d766295fbcb7062b4d5ca03c8dd6fb99e787636f43bf96d5b66251b',
                     publickey: 'c9b45b3481bdc48d8ddb09f5f47f513c38993ad2731b60efa2d8f89f802d6e37134e68608041eebda9fdad8be96cd03183201ac0eebaacb20865aef5a8a2b9bd',
+                    encryptionpublickey: 'nFxp+ZRkfG3FRJOAp1TM46REHqXHBgyloazLNe+J+XE=',
                 },
                 {});
             
@@ -78,6 +79,7 @@ global.describe('Balance crypto to fiat', function () {
                     id: '0xf593ca6A1D5013298F7dE87AF4386A807C02F7e8',
                     signature: '0x4d6d5047b1be60f4d158be8c6e2e5022ad3ea02b7c6f083338c53e86109a11c1335d58480b66707270c13fdef7c0479a44ba2fe224f5c078574307b01229ee361b',
                     publickey: 'dd036f14b0198dae36381242e1b47d249909446699d79bf1a478e7efe274c8caa54584ff908beb900e317b7ac535941815fd605816c33a8bbcca7f027058508b',
+                    encryptionpublickey: 'fLCuEBf7FMygt2/lGHFyk4+/vEhjoE4ouZOsQZt+OXQ=',
                 },
                 {});
             
@@ -107,10 +109,9 @@ global.describe('Balance crypto to fiat', function () {
         orderBuy.Side = 'Buy';
         
         let insertBuy_fail = false;
-        let buyId = null;
-        try {
-            buyId = order.insert(orderBuy);
-        } catch (e) {
+        const buyId = order.insert(orderBuy);
+        
+        if (!buyId) {
             insertBuy_fail = true;
         }
         
@@ -122,10 +123,9 @@ global.describe('Balance crypto to fiat', function () {
         orderSell.Side = 'Sell';
         
         let insertSell_fail = false;
-        let sellId = null;
-        try {
-            sellId = order.insert(orderSell);
-        } catch (e) {
+        const sellId = order.insert(orderSell);
+        
+        if (!sellId) {
             insertSell_fail = true;
         }
         
@@ -164,7 +164,7 @@ global.describe('Balance crypto to fiat', function () {
         orderBuy.Side = 'Buy';
         
         const buyId = order.insert(orderBuy);
-        
+            
         const orderSell = EJSON.clone(orderInstance);
         orderSell.UserId = userMaker.userId;
         orderSell.LimitPrice = Decimal('0.002');
@@ -173,7 +173,7 @@ global.describe('Balance crypto to fiat', function () {
         orderSell.Side = 'Sell';
         
         const sellId = order.insert(orderSell);
-        
+                        
         setTimeout(Meteor.bindEnvironment(() => {
             try {
                 chai.assert.equal(trade.find({ OrderId: { $in: [buyId, sellId] } }).count(), 0);
@@ -205,9 +205,9 @@ global.describe('Balance crypto to fiat', function () {
         orderBuy.Quantity = Decimal('3.145');
         orderBuy.OrigQuantity = Decimal('3.145');
         orderBuy.Side = 'Buy';
-        
+
         const buyId = order.insert(orderBuy);
-        
+                        
         const orderSell = EJSON.clone(orderInstance);
         orderSell.UserId = userMaker.userId;
         orderSell.LimitPrice = Decimal('0.002');
@@ -216,7 +216,7 @@ global.describe('Balance crypto to fiat', function () {
         orderSell.Side = 'Sell';
         
         const sellId = order.insert(orderSell);
-        
+
         // cancel orders
         order.update({ _id: buyId }, { $set: { OrderState: 'Canceled' } });
         order.update({ _id: sellId }, { $set: { OrderState: 'Canceled' } });
@@ -256,7 +256,7 @@ global.describe('Balance crypto to fiat', function () {
         orderBuy.Side = 'Buy';
         
         const buyId = order.insert(orderBuy);
-        
+                        
         const orderSell = EJSON.clone(orderInstance);
         orderSell.UserId = userMaker.userId;
         orderSell.LimitPrice = Decimal('0.031112');
@@ -265,7 +265,7 @@ global.describe('Balance crypto to fiat', function () {
         orderSell.Side = 'Sell';
         
         const sellId = order.insert(orderSell);
-        
+                        
         setTimeout(Meteor.bindEnvironment(() => {
             try {
                 chai.assert.equal(trade.find({ OrderId: { $in: [buyId, sellId] }, TradeState: 'Deferred' }).count(), 2);
@@ -315,7 +315,7 @@ global.describe('Balance crypto to fiat', function () {
         orderBuy.Side = 'Buy';
         
         const buyId = order.insert(orderBuy);
-        
+                        
         const orderSell = EJSON.clone(orderInstance);
         orderSell.UserId = userMaker.userId;
         orderSell.LimitPrice = Decimal('0.031112');
@@ -324,7 +324,7 @@ global.describe('Balance crypto to fiat', function () {
         orderSell.Side = 'Sell';
         
         const sellId = order.insert(orderSell);
-        
+                        
         setTimeout(Meteor.bindEnvironment(() => {
             const _ExecutionId = trade.findOne({ OrderId: buyId }).ExecutionId;
             closeTalkConfirmTrade(_ExecutionId);
@@ -343,7 +343,7 @@ global.describe('Balance crypto to fiat', function () {
                 chai.assert.equal(order.findOne({ _id: buyId }).QuantityExecuted.toString(), '1.333', 'buy QuantityExecuted is 1.333');
                 chai.assert.equal(order.findOne({ _id: sellId }).QuantityExecuted.toString(), '1.333', 'sell QuantityExecuted is 1.333');
                 
-                chai.assert.equal(balance.findOne({ UserId: userTaker.userId, ProductSymbol: 'ESCB' }).Balance, '1.333', 'userTaker ESCB balance is 1.333');
+                chai.assert.equal(balance.findOne({ UserId: userTaker.userId, ProductSymbol: 'ESCB' }).Balance.toString(), '1.331667', 'userTaker ESCB balance is 1.331667');
                 
                 chai.assert.equal(transaction.find({ UserId: userMaker.userId, ProductSymbol: 'ESCB' }).count(), 1); // hold
                 

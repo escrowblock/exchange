@@ -1,6 +1,8 @@
 import { Decimal } from 'meteor/mongo-decimal';
 import { _ } from 'meteor/underscore';
-import { order } from '/imports/collections';
+import {
+    order, product, schemas,
+} from '/imports/collections';
 import { Meteor } from 'meteor/meteor';
 import { check } from 'meteor/check';
 import { EJSON } from 'meteor/ejson';
@@ -10,6 +12,20 @@ Meteor.methods({
         if (Meteor.userId() == null) {
             throw new Meteor.Error(403, 'Please log in to place this order');
         }
+
+        const _product = String(_order.InstrumentSymbol).split('_');
+
+        product.find({ ProductSymbol: { $in: _product } }, { fields: { ProductType: 1 } }).map(function(_product) {
+            if (_product.ProductType == 'NationalCurrency') {
+                if (_.isUndefined(Meteor.users.findOne({ _id: Meteor.userId() }).services.ethereum.encryptionpublickey)) {
+                    throw new Meteor.Error(404, 'You must create encryption public key because this order type demands deferred transaction');
+                } else {
+                    return null;
+                }
+            }
+            return null;
+        });
+        
         const newOrder = Object.assign({}, _order);
         if (newOrder.Quantity) {
             newOrder.Quantity = Decimal(newOrder.Quantity);
@@ -30,14 +46,13 @@ Meteor.methods({
         if (newOrder.Quantity.eq('0')) {
             throw new Meteor.Error(404, 'Quantity can not be equal 0');
         }
-        check(newOrder, Object);
     
         // Initial states for all new orders
         newOrder.UserId = Meteor.userId();
         newOrder.OrderState = 'Working';
         newOrder.QuantityExecuted = Decimal('0');
         newOrder.ChangeReason = 'NewInputAccepted';
-        newOrder.PreviousOrderRevision = 0;
+        newOrder.PreviousOrderRevision = '';
         newOrder.RejectReason = '';
         newOrder.InsideAsk = Decimal('0');
         newOrder.InsideAskSize = Decimal('0');
@@ -83,39 +98,62 @@ Meteor.methods({
             console.debug(EJSON.stringify(newOrder));
         }
         //
-
-        order.insert(newOrder);
+        check(newOrder, schemas.order);
+        
+        const result = new Promise((resolve) => {
+            order.insert(newOrder, function(error) {
+                if (!error) {
+                    resolve(true);
+                } else {
+                    resolve(new Meteor.Error(403, error.error));
+                }
+            });
+        }).await();
+        
+        if (result !== true) {
+            throw result;
+        }
+        return result;
     },
-    cancelOrder (OrderID) {
+    cancelOrder (OrderId) {
         if (Meteor.userId() == null) {
             throw new Meteor.Error(403, 'Please log in to do this operation');
         }
-        check(OrderID, String);
+        check(OrderId, String);
 
         // @DEBUG
         if (!_.isUndefined(Meteor.settings.public.debug) && Meteor.settings.public.debug) {
-            console.debug(`Cancel ${OrderID}`);
+            console.debug(`Cancel ${OrderId}`);
         }
         //
 
-        order.update({ _id: OrderID, UserId: Meteor.userId(), OrderState: { $in: ['Working'] } }, { $set: { OrderState: 'Canceled' } });
+        order.update({ _id: OrderId, UserId: Meteor.userId(), OrderState: { $in: ['Working'] } }, { $set: { OrderState: 'Canceled' } });
     },
     cancelOrderSell () {
         if (Meteor.userId() == null) {
             throw new Meteor.Error(403, 'Please log in to do this operation');
         }
-        order.update({ Side: 'Sell', UserId: Meteor.userId(), OrderState: { $in: ['Working'] } }, { $set: { OrderState: 'Canceled' } }, { multi: 1 });
+        const ids = order.find({ Side: 'Sell', UserId: Meteor.userId(), OrderState: { $in: ['Working'] } }, { fields: { _id: 1 } }).map(function (obj) {
+            return obj._id;
+        });
+        order.update({ _id: { $in: ids } }, { $set: { OrderState: 'Canceled' } }, { multi: 1 });
     },
     cancelOrderBuy () {
         if (Meteor.userId() == null) {
             throw new Meteor.Error(403, 'Please log in to do this operation');
         }
-        order.update({ Side: 'Buy', UserId: Meteor.userId(), OrderState: { $in: ['Working'] } }, { $set: { OrderState: 'Canceled' } }, { multi: 1 });
+        const ids = order.find({ Side: 'Buy', UserId: Meteor.userId(), OrderState: { $in: ['Working'] } }, { fields: { _id: 1 } }).map(function (obj) {
+            return obj._id;
+        });
+        order.update({ _id: { $in: ids } }, { $set: { OrderState: 'Canceled' } }, { multi: 1 });
     },
     cancelOrderAll () {
         if (Meteor.userId() == null) {
             throw new Meteor.Error(403, 'Please log in to do this operation');
         }
-        order.update({ UserId: Meteor.userId(), OrderState: { $in: ['Working'] } }, { $set: { OrderState: 'Canceled' } }, { multi: 1 });
+        const ids = order.find({ UserId: Meteor.userId(), OrderState: { $in: ['Working'] } }).map(function (obj) {
+            return obj._id;
+        });
+        order.update({ _id: { $in: ids } }, { $set: { OrderState: 'Canceled' } }, { multi: 1 });
     },
 });
