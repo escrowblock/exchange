@@ -569,7 +569,7 @@ const _getFeeByOrder = function(doc, orderExecution) {
     const _p1 = (doc.Side == 'Buy' ? doc.Price.times(doc.QuantityExecuted) : doc.QuantityExecuted);
 
     if (doc.Side == 'Buy' && orderExecution.Side == 'Sell') {
-        const _productSymbol1 = product.findOne({ ProductSymbol: _product[1] }, {fields: {NoFees: 1, Deferred: 1}});
+        const _productSymbol1 = product.findOne({ ProductSymbol: _product[1] }, { fields: { NoFees: 1, Deferred: 1 } });
         if (!_productSymbol1.NoFees) {
             const personalFeeTaker = fee.findOne({ UserId: doc.UserId }) ? fee.findOne({ UserId: doc.UserId }).FeeTaker : Decimal(commonFee);
             if (!_productSymbol1.Deferred) {
@@ -578,7 +578,7 @@ const _getFeeByOrder = function(doc, orderExecution) {
                 _fee.taker = [_p0.times(personalFeeTaker), _product[0]];
             }
         }
-        const _productSymbol0 = product.findOne({ ProductSymbol: _product[0] }, {fields: {NoFees: 1, Deferred: 1}});
+        const _productSymbol0 = product.findOne({ ProductSymbol: _product[0] }, { fields: { NoFees: 1, Deferred: 1 } });
         if (!_productSymbol0.NoFees) {
             const personalFeeMaker = fee.findOne({ UserId: orderExecution.UserId }) ? fee.findOne({ UserId: orderExecution.UserId }).FeeMaker : Decimal(commonFee);
             if (!_productSymbol0.Deferred) {
@@ -588,7 +588,7 @@ const _getFeeByOrder = function(doc, orderExecution) {
             }
         }
     } else {
-        const _productSymbol1 = product.findOne({ ProductSymbol: _product[1] }, {fields: {NoFees: 1, Deferred: 1}});
+        const _productSymbol1 = product.findOne({ ProductSymbol: _product[1] }, { fields: { NoFees: 1, Deferred: 1 } });
         if (!_productSymbol1.NoFees) {
             const personalFeeTaker = fee.findOne({ UserId: orderExecution.UserId }) ? fee.findOne({ UserId: orderExecution.UserId }).FeeTaker : Decimal(commonFee);
             if (!_productSymbol1.Deferred) {
@@ -597,7 +597,7 @@ const _getFeeByOrder = function(doc, orderExecution) {
                 _fee.taker = [_p0.times(personalFeeTaker), _product[0]];
             }
         }
-        const _productSymbol0 = product.findOne({ ProductSymbol: _product[0] }, {fields: {NoFees: 1, Deferred: 1}});
+        const _productSymbol0 = product.findOne({ ProductSymbol: _product[0] }, { fields: { NoFees: 1, Deferred: 1 } });
         if (!_productSymbol0.NoFees) {
             const personalFeeMaker = fee.findOne({ UserId: doc.UserId }) ? fee.findOne({ UserId: doc.UserId }).FeeMaker : Decimal(commonFee);
             if (!_productSymbol0.Deferred) {
@@ -644,7 +644,7 @@ const _changeBalanceByTrade = function(userId, InstrumentSymbol, side, tradeId, 
     const balanceSide = (side == 'Buy' ? _product[0] : _product[1]);
     const inTradeSide = (side == 'Buy' ? _product[1] : _product[0]);
     
-    //console.log("1 " + side + ": balanceSide " + balanceSide + " " + _p0, "inTradeSide " +  inTradeSide + " " + _p1 + " for " + userId);
+    // console.log("1 " + side + ": balanceSide " + balanceSide + " " + _p0, "inTradeSide " +  inTradeSide + " " + _p1 + " for " + userId);
     
     const DeferredInTrade = product.findOne({ ProductSymbol: inTradeSide }).Deferred;
     const DeferredBalance = product.findOne({ ProductSymbol: balanceSide }).Deferred;
@@ -661,14 +661,14 @@ const _changeBalanceByTrade = function(userId, InstrumentSymbol, side, tradeId, 
         currentBalance = { Balance: Decimal('0') };
     }
     
-    //console.log("2 " + side + " current: balanceSide " + balanceSide + " " + currentBalance.Balance, "inTradeSide " +  inTradeSide + " " + currentInTrade.InTrade);
+    // console.log("2 " + side + " current: balanceSide " + balanceSide + " " + currentBalance.Balance, "inTradeSide " +  inTradeSide + " " + currentInTrade.InTrade);
     
     const newBalance = DeferredBalance ? Decimal('0') : currentBalance.Balance.add(_p0);
     const newInTrade = currentInTrade.InTrade.sub(_p1);
     
-    //console.log("3 " + side + " new: balanceSide " + balanceSide + " " + newBalance, "inTradeSide " +  inTradeSide + " " + newInTrade);
+    // console.log("3 " + side + " new: balanceSide " + balanceSide + " " + newBalance, "inTradeSide " +  inTradeSide + " " + newInTrade);
     
-    //console.log("4 fee " + fee[0] + " is:" + fee[1]);
+    // console.log("4 fee " + fee[0] + " is:" + fee[1]);
 
     transaction.insert({
         UserId: userId,
